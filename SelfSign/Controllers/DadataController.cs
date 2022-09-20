@@ -22,8 +22,10 @@ namespace SelfSign.Controllers
         [HttpGet("address")]
         public async Task<IActionResult> Address(string request) 
         {
-           
-           var response = await _httpClient.PostAsync("https://cleaner.dadata.ru/api/v1/clean/address",new StringContent($"{System.Text.Json.JsonSerializer.Serialize(new[] {request})}",System.Text.Encoding.UTF8,"application/json"));
+            HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            HttpContext.Response.Headers.Add("Access-Control-Allow-Headers", "X-Requested-With");
+
+            var response = await _httpClient.PostAsync("https://cleaner.dadata.ru/api/v1/clean/address",new StringContent($"{System.Text.Json.JsonSerializer.Serialize(new[] {request})}",System.Text.Encoding.UTF8,"application/json"));
             if ((int)response.StatusCode == 200)
             {
                 var responseString = await response.Content.ReadAsStringAsync();

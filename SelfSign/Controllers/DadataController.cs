@@ -24,22 +24,29 @@ namespace SelfSign.Controllers
         {
             HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");
             HttpContext.Response.Headers.Add("Access-Control-Allow-Headers", "X-Requested-With");
+            var requestModel = new
+            {
+                query = request
+            };
+            var response = await _httpClient.PostAsync("https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address", new StringContent(JsonConvert.SerializeObject(requestModel),System.Text.Encoding.UTF8,"application/json"));
+            var responseString = await response.Content.ReadAsStringAsync();
 
-            var response = await _httpClient.PostAsync("https://cleaner.dadata.ru/api/v1/clean/address",new StringContent($"{System.Text.Json.JsonSerializer.Serialize(new[] {request})}",System.Text.Encoding.UTF8,"application/json"));
             if ((int)response.StatusCode == 200)
             {
-                var responseString = await response.Content.ReadAsStringAsync();
-                dynamic responseJson = JsonConvert.DeserializeObject<List<DadataResponse>>( responseString);
-                return Ok(responseJson);
+                dynamic responseJson = JsonConvert.DeserializeObject<DadataWrapper>( responseString);
+                return Ok(responseJson.suggestions);
             }
             return BadRequest();
         }
     }
+    public class DadataWrapper { 
+        
+        public List< DadataResponse> suggestions { get; set; }
+    }
     public class DadataResponse
     {
-        public string region_kladr_id { get; set; }
-        public string country { get; set; }
-        public string result { get; set; }
+        public string value { get; set; }
     }
+
 }
 

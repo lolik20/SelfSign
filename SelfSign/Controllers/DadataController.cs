@@ -34,7 +34,7 @@ namespace SelfSign.Controllers
             if ((int)response.StatusCode == 200)
             {
                 var responseJson = JsonConvert.DeserializeObject<DadataWrapper>( responseString);
-                return Ok(responseJson.suggestions);
+                return Ok(responseJson.suggestions.Take(5));
             }
             return BadRequest();
         }

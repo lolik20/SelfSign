@@ -33,8 +33,8 @@ namespace SelfSign.Controllers
 
             if ((int)response.StatusCode == 200)
             {
-                dynamic responseJson = JsonConvert.DeserializeObject<DadataWrapper>( responseString);
-                return Ok(responseJson.suggestions.Take(5));
+                var responseJson = JsonConvert.DeserializeObject<DadataWrapper>( responseString);
+                return Ok(responseJson.suggestions);
             }
             return BadRequest();
         }

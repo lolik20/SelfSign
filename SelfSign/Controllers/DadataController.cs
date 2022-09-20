@@ -38,6 +38,25 @@ namespace SelfSign.Controllers
             }
             return BadRequest();
         }
+        [HttpGet("issuedby")]
+        public async Task<IActionResult> IssuedBy(string request)
+        {
+            HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+            HttpContext.Response.Headers.Add("Access-Control-Allow-Headers", "X-Requested-With");
+            var requestModel = new
+            {
+                query = request
+            };
+            var response = await _httpClient.PostAsync("https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/fms_unit", new StringContent(JsonConvert.SerializeObject(requestModel), System.Text.Encoding.UTF8, "application/json"));
+            var responseString = await response.Content.ReadAsStringAsync();
+
+            if ((int)response.StatusCode == 200)
+            {
+                var responseJson = JsonConvert.DeserializeObject<DadataWrapper>(responseString);
+                return Ok(responseJson.suggestions.Take(5));
+            }
+            return BadRequest();
+        }
     }
     public class DadataWrapper { 
         

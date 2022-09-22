@@ -111,7 +111,10 @@ namespace SelfSign.Controllers
         public string birthDate { get; set; }
         public string passportNumber { get; set; }
         public string passportDate { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
         public string accessKey { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+
         public string secretKey { get; set; }
     }
 

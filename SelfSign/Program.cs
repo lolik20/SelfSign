@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 ConfigurationManager configuration = builder.Configuration; // allows both to access and to set up the config
 IWebHostEnvironment environment = builder.Environment;
 builder.Services.AddControllers();
+IConfiguration staticConfiguration = new ConfigurationManager();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

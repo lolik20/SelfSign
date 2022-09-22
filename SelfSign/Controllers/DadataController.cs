@@ -9,30 +9,37 @@ namespace SelfSign.Controllers
     [Route("api/[controller]")]
     public class DadataController : ControllerBase
     {
-        private static readonly HttpClient _httpClient = new HttpClient();
+        private HttpClient _httpClient;
+        private IConfiguration _configuration;
+        private Dictionary<DadataMethod, string> urls;
+        
 
-        private static readonly string ApiKey = "2e4092e70b939226cedb8cd26b558a10fe3d2fce";
-        private static readonly string SecretKey = "c7c587fd62ef10de80ec97c6e00a9244e0fe20b9";
-        private static readonly Dictionary<Method, string> urls = new Dictionary<Method, string>();
-
-        static DadataController()
+        public DadataController(IConfiguration configuration)
         {
-            _httpClient.DefaultRequestHeaders.Add("X-Secret", SecretKey);
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Token {ApiKey}");
-            urls.Add(Method.Address, "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address");
-            urls.Add(Method.Fms, "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/fms_unit");
-            
+            Initial(configuration);
+        }
+        private void Initial(IConfiguration configuration)
+        {
+            _configuration = configuration;
+            _httpClient = new HttpClient();
+            urls = new Dictionary<DadataMethod, string>();
+            var dadataSection = _configuration.GetSection("Dadata");
+            _httpClient.DefaultRequestHeaders.Add("X-Secret", dadataSection.GetValue<string>("Secret"));
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Token {dadataSection.GetValue<string>("Api")}");
+            urls.Add(DadataMethod.Address, "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address");
+            urls.Add(DadataMethod.Fms, "https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/fms_unit");
         }
         private void AddResponseHeaders()
         {
             var header = HttpContext.Response.Headers.FirstOrDefault(x => x.Key == "Access-Control-Allow-Origin");
-            if (header.Key==null) {
+            if (header.Key == null)
+            {
 
                 HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");
                 HttpContext.Response.Headers.Add("Access-Control-Allow-Headers", "X-Requested-With");
             }
         }
-        private async Task<List<DadataResponse>> GetData(string request, Method method)
+        private async Task<List<DadataResponse>> GetData(string request, DadataMethod method)
         {
             AddResponseHeaders();
             var requestModel = new
@@ -43,7 +50,7 @@ namespace SelfSign.Controllers
             var response = await _httpClient.PostAsync(url, new StringContent(JsonConvert.SerializeObject(requestModel), System.Text.Encoding.UTF8, "application/json"));
             var responseString = await response.Content.ReadAsStringAsync();
 
-            if ((int)response.StatusCode == 200)
+          if ((int)response.StatusCode == 200)
             {
                 var responseJson = JsonConvert.DeserializeObject<DadataWrapper>(responseString);
                 return responseJson.suggestions;
@@ -53,7 +60,7 @@ namespace SelfSign.Controllers
         [HttpGet("address")]
         public async Task<IActionResult> Address(string request)
         {
-            var response =await GetData(request, Method.Address);
+            var response = await GetData(request, DadataMethod.Address);
             if (response != null)
             {
                 return Ok(response);
@@ -63,7 +70,7 @@ namespace SelfSign.Controllers
         [HttpGet("issuedby")]
         public async Task<IActionResult> IssuedBy(string request)
         {
-            var response = GetData(request, Method.Fms);
+            var response =await GetData(request, DadataMethod.Fms);
             if (response != null)
             {
                 return Ok(response);
@@ -80,7 +87,7 @@ namespace SelfSign.Controllers
     {
         public string value { get; set; }
     }
-    public enum Method
+    enum DadataMethod
     {
         Address = 0,
         Fms = 1

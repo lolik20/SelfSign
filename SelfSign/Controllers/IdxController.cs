@@ -55,6 +55,7 @@ namespace SelfSign.Controllers
         [HttpPost("inn")]
         public async Task<IActionResult> Inn([FromBody] InnRequest request)
         {
+                    AddResponseHeaders();
             var keys = _configuration.GetSection("Idx");
 
 

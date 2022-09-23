@@ -11,7 +11,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
 {
-    builder.WithOrigins("*").AllowAnyMethod().AllowAnyHeader();
+    builder.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader();
 }));
 builder.Services.AddMvc();
 var app = builder.Build();

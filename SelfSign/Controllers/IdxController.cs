@@ -24,6 +24,7 @@ namespace SelfSign.Controllers
             urls.Add(IdxMethod.First, "https://api.id-x.org/idx/api2/parseAuto/multiple/passport");
             urls.Add(IdxMethod.Second, "https://api.id-x.org/idx/api2/parseAuto/multiple/passportRegistration");
             urls.Add(IdxMethod.Inn, "https://api.id-x.org/idx/api2/getInn");
+            urls.Add(IdxMethod.Snils, "https://api.id-x.org/idx/api2/parseAuto/multiple/snils");
 
         }
 
@@ -52,10 +53,17 @@ namespace SelfSign.Controllers
             var response = await PostData(request.file, keys, IdxMethod.First);
             return Ok(response);
         }
+        [HttpPost("snils")]
+        public async Task<IActionResult> Snils([FromForm] PassportRequest request)
+        {
+            var keys = _configuration.GetSection("Idx").AsEnumerable();
+            var response = await PostData(request.file, keys, IdxMethod.Snils);
+            return Ok(response);
+        }
         [HttpPost("inn")]
         public async Task<IActionResult> Inn([FromBody] InnRequest request)
         {
-                    AddResponseHeaders();
+            AddResponseHeaders();
             var keys = _configuration.GetSection("Idx");
 
 
@@ -123,6 +131,7 @@ namespace SelfSign.Controllers
     enum IdxMethod { 
         First = 0,
         Second = 1,
-        Inn =2
+        Inn =2,
+        Snils = 3,
     }
 }

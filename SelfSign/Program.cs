@@ -1,4 +1,7 @@
 
+using Microsoft.EntityFrameworkCore;
+using SelfSign;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,6 +12,9 @@ IConfiguration staticConfiguration = new ConfigurationManager();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddDbContext<ApplicationContext>(x =>
+x.UseNpgsql(configuration.GetConnectionString("Database")));
+
 builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
 {
     builder.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader();

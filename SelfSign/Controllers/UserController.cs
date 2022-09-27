@@ -89,12 +89,12 @@ namespace SelfSign.Controllers
             user.Patronymic = request.Patronymic;
             user.IssueDate = DateTime.Parse(request.IssueDate, CultureInfo.GetCultureInfo("ru-RU")).ToUniversalTime();
             user.BirthDate = DateTime.Parse(request.BirthDate, CultureInfo.GetCultureInfo("ru-RU")).ToUniversalTime();
-            user.Serial = user.Serial;
-            user.Number = user.Number;
-            user.RegAddress = user.RegAddress;
-            user.SubDivisionAddress = user.SubDivisionAddress;
-            user.SubDivisionCode = user.SubDivisionCode;
-            user.BirthPlace = user.BirthPlace;
+            user.Serial = request.Serial;
+            user.Number = request.Number;
+            user.RegAddress = request.RegAddress;
+            user.SubDivisionAddress = request.SubDivisionAddress;
+            user.SubDivisionCode = request.SubDivisionCode;
+            user.BirthPlace = request.BirthPlace;
 
             _context.SaveChanges();
             return Ok(user);
@@ -113,13 +113,13 @@ namespace SelfSign.Controllers
 
             user.IssueDate = DateTime.Parse(request.IssueDate, CultureInfo.GetCultureInfo("ru-RU")).ToUniversalTime(); 
             user.BirthDate = DateTime.Parse(request.BirthDate, CultureInfo.GetCultureInfo("ru-RU")).ToUniversalTime();
-            user.Serial = user.Serial;
-            user.Number = user.Number;
-            user.RegAddress = user.RegAddress;
-            user.SubDivisionAddress = user.SubDivisionAddress;
-            user.SubDivisionCode = user.SubDivisionCode;
-            user.BirthPlace = user.BirthPlace;
-
+            user.Serial = request.Serial;
+            user.Number = request.Number;
+            user.RegAddress = request.RegAddress;
+            user.SubDivisionAddress = request.SubDivisionAddress;
+            user.SubDivisionCode = request.SubDivisionCode;
+            user.BirthPlace = request.BirthPlace;
+            user.Citizenship = request.Citizenship;
             _context.SaveChanges();
             return Ok(user);
         }
@@ -175,5 +175,6 @@ namespace SelfSign.Controllers
         public string SubDivisionCode { get; set; }
         public string SubDivisionAddress { get; set; }
         public string Gender { get; set; }
+        public string Citizenship { get; set; }
     }
 }

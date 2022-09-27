@@ -37,6 +37,7 @@ namespace SelfSign.Controllers
                     Patronymic=request.Patronymic,
                     Phone=request.Phone
                 });
+                _context.SaveChanges();
                 return Ok();
             }
             return BadRequest();

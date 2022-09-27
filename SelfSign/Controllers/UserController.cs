@@ -26,12 +26,11 @@ namespace SelfSign.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
-            var user = _context.Users.FirstOrDefault(x=>x.Id==request.Id);
+            var user = _context.Users.FirstOrDefault(x=>x.Name==request.Name&&x.Surname==request.Surname&&x.Patronymic==request.Patronymic&&x.Phone==request.Phone);
             if (user == null)
             {
                var newEntity=  _context.Users.Add(new User
                 {
-                    Id = request.Id,
                     Name=request.Name,
                     Surname=request.Surname,
                     Patronymic=request.Patronymic,
@@ -67,7 +66,6 @@ namespace SelfSign.Controllers
     }
     public class CreateUserRequest
     {
-        public Guid Id { get; set; }
         public string Name { get; set; }
         public string Surname { get; set; }
         public string Patronymic { get; set; }

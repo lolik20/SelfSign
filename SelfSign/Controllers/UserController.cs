@@ -81,6 +81,7 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
+
             user.IssueDate =DateTime.Parse( request.IssueDate).ToUniversalTime();
             user.BirthDate = DateTime.Parse(request.BirthDate).ToUniversalTime();
             user.Serial = user.Serial;
@@ -101,6 +102,7 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
+            user.Surname= request.
             user.IssueDate = DateTime.Parse(request.IssueDate).ToUniversalTime();
             user.BirthDate = DateTime.Parse(request.BirthDate).ToUniversalTime();
             user.Serial = user.Serial;
@@ -136,6 +138,9 @@ namespace SelfSign.Controllers
     public class CitizenUpdateRequest
     {
         public Guid Id { get; set; }
+        public string Surname { get; set; }
+        public string Name { get; set; }
+        public string Patronymic { get; set; }
         public string Serial { get; set; }
         public string Number { get; set; }
         public string RegAddress { get; set; }

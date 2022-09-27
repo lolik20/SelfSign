@@ -81,6 +81,8 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
+            var gender = new Gender();
+            Enum.TryParse(request.Gender,out gender);
             user.Name = request.Name;
             user.Surname = request.Surname;
             user.Patronymic = request.Patronymic;
@@ -104,6 +106,8 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
+            var gender = new Gender();
+            Enum.TryParse(request.Gender, out gender);
             user.IssueDate = DateTime.Parse(request.IssueDate).ToUniversalTime();
             user.BirthDate = DateTime.Parse(request.BirthDate).ToUniversalTime();
             user.Serial = user.Serial;
@@ -150,7 +154,7 @@ namespace SelfSign.Controllers
         public string IssueDate { get; set; }
         public string SubDivisionCode { get; set; }
         public string SubDivisionAddress { get; set; }
-        public Gender Gender { get; set; }
+        public string Gender { get; set; }
 
     }
     public class ForeignerUpdateRequest
@@ -164,6 +168,6 @@ namespace SelfSign.Controllers
         public string IssueDate { get; set; }
         public string SubDivisionCode { get; set; }
         public string SubDivisionAddress { get; set; }
-        public Gender Gender { get; set; }
+        public string Gender { get; set; }
     }
 }

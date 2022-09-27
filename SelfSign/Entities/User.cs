@@ -21,6 +21,7 @@
         public string Gender { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]
         public List<Document> Documents { get; set; }
+        public SignatureType SignatureType { get; set; }
 
     }
 }

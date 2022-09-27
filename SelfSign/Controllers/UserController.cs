@@ -29,7 +29,7 @@ namespace SelfSign.Controllers
             var user = _context.Users.FirstOrDefault(x=>x.Id==request.Id);
             if (user == null)
             {
-                _context.Users.Add(new User
+               var newEntity=  _context.Users.Add(new User
                 {
                     Id = request.Id,
                     Name=request.Name,
@@ -38,21 +38,12 @@ namespace SelfSign.Controllers
                     Phone=request.Phone,
                     BirthDate=default,
                     RegDate=default,
-                    SubDivisionAddress="",
-                    SubDivisionCode="",
-                    BirthPlace="",
-                    Email = "",
-                    Gender="",
-                    Inn="",
-                    Number="",
-                    RegAddress="",
-                    Serial="",
-                    Snils=""
+                   
                 });
                 _context.SaveChanges();
-                return Ok();
+                return Ok(newEntity.Entity.Id);
             }
-            return BadRequest();
+            return BadRequest(user.Id);
         }
         [HttpPut]
         public async Task<IActionResult> Update([FromBody] User user)

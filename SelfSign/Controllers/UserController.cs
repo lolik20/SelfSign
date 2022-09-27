@@ -38,6 +38,7 @@ namespace SelfSign.Controllers
                     Phone=request.Phone,
                     BirthDate=default,
                     RegDate=default,
+                    SignatureType=request.SignatureType
                    
                 });
                 _context.SaveChanges();
@@ -61,6 +62,7 @@ namespace SelfSign.Controllers
         public string Surname { get; set; }
         public string Patronymic { get; set; }
         public string Phone { get; set; }
+        public SignatureType SignatureType { get; set; }
     }
 
 }

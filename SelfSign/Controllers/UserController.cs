@@ -35,7 +35,19 @@ namespace SelfSign.Controllers
                     Name=request.Name,
                     Surname=request.Surname,
                     Patronymic=request.Patronymic,
-                    Phone=request.Phone
+                    Phone=request.Phone,
+                    BirthDate=default,
+                    RegDate=default,
+                    SubDivisionAddress="",
+                    SubDivisionCode="",
+                    BirthPlace="",
+                    Email = "",
+                    Gender="",
+                    Inn="",
+                    Number="",
+                    RegAddress="",
+                    Serial="",
+                    Snils=""
                 });
                 _context.SaveChanges();
                 return Ok();

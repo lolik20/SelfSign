@@ -1,40 +1,18 @@
-
-using Microsoft.EntityFrameworkCore;
-using SelfSign;
-
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-ConfigurationManager configuration = builder.Configuration; // allows both to access and to set up the config
-IWebHostEnvironment environment = builder.Environment;
-builder.Services.AddControllers();
-IConfiguration staticConfiguration = new ConfigurationManager();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<ApplicationContext>(x =>
-x.UseNpgsql(configuration.GetConnectionString("Database")));
-
-builder.Services.AddCors(p => p.AddPolicy("corsapp", builder =>
+﻿namespace SelfSign
 {
-    builder.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader();
-}));
-builder.Services.AddMvc();
-var app = builder.Build();
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            CreateHostBuilder(args).Build().Run();
+        }
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+
+                });
+    }
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
-app.UseCors("corsapp");
-app.UseMvc();

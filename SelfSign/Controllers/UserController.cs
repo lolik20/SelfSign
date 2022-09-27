@@ -107,6 +107,7 @@ namespace SelfSign.Controllers
                 return NotFound();
             }
             var gender = new Gender();
+            
             Enum.TryParse(request.Gender, out gender);
             user.IssueDate = DateTime.Parse(request.IssueDate).ToUniversalTime();
             user.BirthDate = DateTime.Parse(request.BirthDate).ToUniversalTime();
@@ -160,6 +161,9 @@ namespace SelfSign.Controllers
     public class ForeignerUpdateRequest
     {
         public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public string Patronymic { get; set; }
         public string Serial { get; set; }
         public string Number { get; set; }
         public string RegAddress { get; set; }

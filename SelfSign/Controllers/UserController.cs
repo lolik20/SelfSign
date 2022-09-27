@@ -26,41 +26,52 @@ namespace SelfSign.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
-            var user = _context.Users.FirstOrDefault(x=>x.Name==request.Name&&x.Surname==request.Surname&&x.Patronymic==request.Patronymic&&x.Phone==request.Phone);
+            var user = _context.Users.FirstOrDefault(x => x.Name == request.Name && x.Surname == request.Surname && x.Patronymic == request.Patronymic && x.Phone == request.Phone);
             if (user == null)
             {
-               var newEntity=  _context.Users.Add(new User
+                var newEntity = _context.Users.Add(new User
                 {
-                    Name=request.Name,
-                    Surname=request.Surname,
-                    Patronymic=request.Patronymic,
-                    Phone=request.Phone,
-                    BirthDate=default,
-                    RegDate=default,
-                    SignatureType=request.SignatureType,
-                    Serial="",
-                    SubDivisionAddress="",
-                    SubDivisionCode="",
-                    BirthPlace="",
-                    Email="",
-                    Gender="",
-                    Inn="",
-                    Number="",
-                    RegAddress="",
-                    Snils=""
-                   
+                    Name = request.Name,
+                    Surname = request.Surname,
+                    Patronymic = request.Patronymic,
+                    Phone = request.Phone,
+                    BirthDate = DateTime.Now,
+                    RegDate = DateTime.Now,
+                    IssueDate = DateTime.Now,
+
+                    SignatureType = request.SignatureType,
+                    Serial = "",
+                    SubDivisionAddress = "",
+                    SubDivisionCode = "",
+                    BirthPlace = "",
+                    Email = "",
+                    Gender = "",
+                    Inn = "",
+                    Number = "",
+                    RegAddress = "",
+                    Snils = ""
+
                 });
                 _context.SaveChanges();
                 return Ok(newEntity.Entity.Id);
             }
             return BadRequest(user.Id);
         }
-        [HttpPut]
-        public async Task<IActionResult> Update([FromBody] User user)
+        [HttpPut("first")]
+        public async Task<IActionResult> Update([FromBody] FirstUpdateRequest request)
         {
-            _context.Entry(user).State = EntityState.Modified;
+            var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            user.Surname = request.Surname;
+            user.Name = request.Name;
+            user.Patronymic = request.Patronymic;
+            user.Phone = request.Phone;
+            user.Email = request.Email;
             _context.SaveChanges();
-            return Ok();
+            return Ok(user);
         }
 
     }
@@ -72,5 +83,22 @@ namespace SelfSign.Controllers
         public string Phone { get; set; }
         public SignatureType SignatureType { get; set; }
     }
+    public class FirstUpdateRequest
+    {
+        public Guid Id { get; set; }
 
+        public string Name { get; set; }
+        public string Surname { get; set; }
+        public string Patronymic { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+    }
+    public class CitizenUpdateRequest
+    {
+
+    }
+    public class ForeignerUpdateRequest
+    {
+
+    }
 }

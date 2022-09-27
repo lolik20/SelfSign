@@ -35,10 +35,10 @@ namespace SelfSign.Controllers
                     Surname = request.Surname,
                     Patronymic = request.Patronymic,
                     Phone = request.Phone,
-                    BirthDate = DateTime.Now,
-                    RegDate = DateTime.Now,
-                    IssueDate = DateTime.Now,
-
+                    BirthDate = DateTime.Now.ToUniversalTime(),
+                    RegDate = DateTime.Now.ToUniversalTime(),
+                    IssueDate = DateTime.Now.ToUniversalTime(),
+                    
                     SignatureType = request.SignatureType,
                     Serial = "",
                     SubDivisionAddress = "",
@@ -73,6 +73,27 @@ namespace SelfSign.Controllers
             _context.SaveChanges();
             return Ok(user);
         }
+        [HttpPut("citizen")]
+        public async Task<IActionResult> Update([FromBody] CitizenUpdateRequest request)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            user.IssueDate =DateTime.Parse( request.IssueDate);
+            user.BirthDate = DateTime.Parse(request.BirthDate);
+            user.Serial = user.Serial;
+            user.Number = user.Number;
+            user.RegAddress = user.RegAddress;
+            user.SubDivisionAddress = user.SubDivisionAddress;
+            user.SubDivisionCode = user.SubDivisionCode;
+            user.BirthPlace = user.BirthPlace;
+
+            _context.SaveChanges();
+            return Ok(user);
+        }
+        
 
     }
     public class CreateUserRequest
@@ -95,6 +116,16 @@ namespace SelfSign.Controllers
     }
     public class CitizenUpdateRequest
     {
+        public Guid Id { get; set; }
+        public string Serial { get; set; }
+        public string Number { get; set; }
+        public string RegAddress { get; set; }
+        public string BirthPlace { get; set; }
+        public string BirthDate { get; set; }
+        public string IssueDate { get; set; }
+        public string SubDivisionCode { get; set; }
+        public string SubDivisionAddress { get; set; }
+        public Gender Gender { get; set; }
 
     }
     public class ForeignerUpdateRequest

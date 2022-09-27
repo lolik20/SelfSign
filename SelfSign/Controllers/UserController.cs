@@ -58,6 +58,30 @@ namespace SelfSign.Controllers
             }
             return BadRequest(user.Id);
         }
+        [HttpPut("inn")]
+        public async Task<IActionResult> Inn([FromBody]InnUpdateRequest request)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            user.Inn = request.Inn;
+            _context.SaveChanges();
+            return Ok();
+        }
+        [HttpPut("snils")]
+        public async Task<IActionResult> Snils([FromBody] SnilsUpdateRequest request)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            user.Snils = request.Snils;
+            _context.SaveChanges();
+            return Ok();
+        }
         [HttpPut("first")]
         public async Task<IActionResult> Update([FromBody] FirstUpdateRequest request)
         {
@@ -176,5 +200,15 @@ namespace SelfSign.Controllers
         public string SubDivisionAddress { get; set; }
         public string Gender { get; set; }
         public string Citizenship { get; set; }
+    }
+    public class InnUpdateRequest
+    {
+        public Guid Id { get; set; }
+        public string Inn { get; set; }
+    }
+    public class SnilsUpdateRequest
+    {
+        public Guid Id { get; set; }
+        public string Snils { get; set; }
     }
 }

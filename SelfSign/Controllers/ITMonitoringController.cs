@@ -59,8 +59,8 @@ namespace SelfSign.Controllers
                 },
                 Address=new
                 {
-                    City = "",
-                    Value = "",
+                    City = user.BirthPlace,
+                    Value = user.RegAddress,
                 },
                 Owner = new
                 {

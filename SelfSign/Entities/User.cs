@@ -13,7 +13,7 @@
         public string BirthPlace { get; set; }
         public DateTime BirthDate { get; set; }
         public DateTime IssueDate { get; set; }
-
+        public string Citizenship { get; set; }
         public string SubDivisionCode { get; set; }
         public string SubDivisionAddress { get; set; }
         public string Snils { get; set; }

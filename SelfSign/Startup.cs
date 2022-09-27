@@ -36,7 +36,7 @@ x.UseNpgsql(Configuration.GetConnectionString("Database")));
             }
             
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 

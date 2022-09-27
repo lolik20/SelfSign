@@ -81,7 +81,9 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
-
+            user.Name = request.Name;
+            user.Surname = request.Surname;
+            user.Patronymic = request.Patronymic;
             user.IssueDate =DateTime.Parse( request.IssueDate).ToUniversalTime();
             user.BirthDate = DateTime.Parse(request.BirthDate).ToUniversalTime();
             user.Serial = user.Serial;
@@ -102,7 +104,6 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
-            user.Surname= request.
             user.IssueDate = DateTime.Parse(request.IssueDate).ToUniversalTime();
             user.BirthDate = DateTime.Parse(request.BirthDate).ToUniversalTime();
             user.Serial = user.Serial;

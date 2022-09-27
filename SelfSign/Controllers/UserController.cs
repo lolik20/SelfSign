@@ -38,7 +38,17 @@ namespace SelfSign.Controllers
                     Phone=request.Phone,
                     BirthDate=default,
                     RegDate=default,
-                    SignatureType=request.SignatureType
+                    SignatureType=request.SignatureType,
+                    Serial="",
+                    SubDivisionAddress="",
+                    SubDivisionCode="",
+                    BirthPlace="",
+                    Email="",
+                    Gender="",
+                    Inn="",
+                    Number="",
+                    RegAddress="",
+                    Snils=""
                    
                 });
                 _context.SaveChanges();

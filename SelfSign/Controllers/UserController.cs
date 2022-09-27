@@ -81,8 +81,8 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
-            user.IssueDate =DateTime.Parse( request.IssueDate);
-            user.BirthDate = DateTime.Parse(request.BirthDate);
+            user.IssueDate =DateTime.Parse( request.IssueDate).ToUniversalTime();
+            user.BirthDate = DateTime.Parse(request.BirthDate).ToUniversalTime();
             user.Serial = user.Serial;
             user.Number = user.Number;
             user.RegAddress = user.RegAddress;
@@ -93,7 +93,26 @@ namespace SelfSign.Controllers
             _context.SaveChanges();
             return Ok(user);
         }
-        
+        [HttpPut("foreigner")]
+        public async Task<IActionResult> Update([FromBody] ForeignerUpdateRequest request)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            user.IssueDate = DateTime.Parse(request.IssueDate).ToUniversalTime();
+            user.BirthDate = DateTime.Parse(request.BirthDate).ToUniversalTime();
+            user.Serial = user.Serial;
+            user.Number = user.Number;
+            user.RegAddress = user.RegAddress;
+            user.SubDivisionAddress = user.SubDivisionAddress;
+            user.SubDivisionCode = user.SubDivisionCode;
+            user.BirthPlace = user.BirthPlace;
+
+            _context.SaveChanges();
+            return Ok(user);
+        }
 
     }
     public class CreateUserRequest
@@ -130,6 +149,15 @@ namespace SelfSign.Controllers
     }
     public class ForeignerUpdateRequest
     {
-
+        public Guid Id { get; set; }
+        public string Serial { get; set; }
+        public string Number { get; set; }
+        public string RegAddress { get; set; }
+        public string BirthPlace { get; set; }
+        public string BirthDate { get; set; }
+        public string IssueDate { get; set; }
+        public string SubDivisionCode { get; set; }
+        public string SubDivisionAddress { get; set; }
+        public Gender Gender { get; set; }
     }
 }

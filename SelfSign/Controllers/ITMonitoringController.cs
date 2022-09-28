@@ -112,7 +112,7 @@ namespace SelfSign.Controllers
             dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
             return Ok(result);
         }
-        [HttpPost("confirmation")]
+        [HttpGet("confirmation")]
         public async Task<IActionResult> Confirmation(Guid id)
         {
             var user = _context.Users.FirstOrDefault(x => x.Id == id);

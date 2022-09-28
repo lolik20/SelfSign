@@ -119,7 +119,7 @@ namespace SelfSign.Controllers
             user.SubDivisionAddress = request.SubDivisionAddress;
             user.SubDivisionCode = request.SubDivisionCode;
             user.BirthPlace = request.BirthPlace;
-
+            user.Citizenship = "RU";
             _context.SaveChanges();
             return Ok(user);
         }

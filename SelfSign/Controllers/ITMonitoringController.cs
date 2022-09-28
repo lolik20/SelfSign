@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using SelfSign.Entities;
 
 namespace SelfSign.Controllers
 {
@@ -38,6 +39,7 @@ namespace SelfSign.Controllers
                 new StringContent(JsonConvert.SerializeObject(request),
                 System.Text.Encoding.UTF8,
                 "application/json"));
+            var requestStrin = await response.RequestMessage.Content.ReadAsStringAsync();
             var responseString = await response.Content.ReadAsStringAsync();
             _httpClient.DefaultRequestHeaders.Add("Authorization", responseString);
         }
@@ -84,18 +86,47 @@ namespace SelfSign.Controllers
                 },
                 TarrifId= "3fa85f64-5717-4562-b3fc-2c963f66afa6"
             };
-            return Ok();
+            string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Request).Value;
+            var response = await _httpClient.PostAsync(url, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
+            dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+            user.MyDssRequestId = result;
+
+            return Ok(result);
         }
-        //[HttpPost("twofactor")]
-        //public Task<IActionResult> TwoFactor()
-        //{
+        [HttpGet("twofactor")]
+        public async Task<IActionResult> TwoFactor([FromQuery]Guid id,string alias)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.TwoFactor).Value;
+            var request = new
+            {
+                Dss2fa = 1,
+                Codeword=alias
+            };
+            string requestId = "";
+            var response = await _httpClient.PostAsync(url.Replace("$requestId",requestId ), new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
+            dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+            return Ok(result);
+        }
+        [HttpPost("confirmation")]
+        public async Task<IActionResult> Confirmation(Guid id)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Confirmation).Value;
+            string requestId = "";
+            var response = await _httpClient.PostAsync(url.Replace("$requestId", requestId),null);
+            dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+            return Ok(result);
+        }
 
-        //}
-        //[HttpPost("confirmation")]
-        //public Task<IActionResult> Comfirmation()
-        //{
-
-        //}
     }
     public enum ITMonitoringMethods
     {

@@ -28,6 +28,11 @@ namespace SelfSign.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
+            var validPhone = Regex.Match(request.Phone, "^\\+\\d{11}$");
+            if (!validPhone.Success)
+            {
+                return BadRequest();
+            }
             var user = _context.Users.FirstOrDefault(x => x.Name == request.Name && x.Surname == request.Surname && x.Patronymic == request.Patronymic && x.Phone == request.Phone);
             if (user == null)
             {
@@ -51,7 +56,9 @@ namespace SelfSign.Controllers
                     Inn = "",
                     Number = "",
                     RegAddress = "",
-                    Snils = ""
+                    Snils = "",
+                    Citizenship="",
+                    
 
                 });
                 _context.SaveChanges();

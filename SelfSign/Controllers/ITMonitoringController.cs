@@ -87,7 +87,7 @@ namespace SelfSign.Controllers
                     Gender=(int)gender,
                     CitizenshipCode=643
                 },
-                TarrifId= "8d9ea681-3cdb-4aa5-9ba6-7cb91f5e120a"
+                TarriffId= "8d9ea681-3cdb-4aa5-9ba6-7cb91f5e120a"
             };
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Request).Value;
             var response = await _httpClient.PostAsync(url, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));

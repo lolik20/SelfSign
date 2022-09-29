@@ -33,6 +33,19 @@ namespace SelfSign.Controllers
             {
                 return BadRequest();
             }
+            if (string.IsNullOrEmpty(request.Name))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Surname))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Patronymic))
+            {
+                return BadRequest();
+            }
+
             var user = _context.Users.FirstOrDefault(x => x.Name == request.Name && x.Surname == request.Surname && x.Patronymic == request.Patronymic && x.Phone == request.Phone);
             if (user == null)
             {
@@ -45,7 +58,7 @@ namespace SelfSign.Controllers
                     BirthDate = DateTime.Now.ToUniversalTime(),
                     RegDate = DateTime.Now.ToUniversalTime(),
                     IssueDate = DateTime.Now.ToUniversalTime(),
-                    
+
                     SignatureType = request.SignatureType,
                     Serial = "",
                     SubDivisionAddress = "",
@@ -57,8 +70,8 @@ namespace SelfSign.Controllers
                     Number = "",
                     RegAddress = "",
                     Snils = "",
-                    Citizenship="",
-                    
+                    Citizenship = "",
+
 
                 });
                 _context.SaveChanges();
@@ -67,7 +80,7 @@ namespace SelfSign.Controllers
             return BadRequest(user.Id);
         }
         [HttpPut("inn")]
-        public async Task<IActionResult> Inn([FromBody]InnUpdateRequest request)
+        public async Task<IActionResult> Inn([FromBody] InnUpdateRequest request)
         {
             var validInn = Regex.Match(request.Inn, "^\\d{12}$");
             if (!validInn.Success)
@@ -79,7 +92,7 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
-           
+
             user.Inn = request.Inn;
             _context.SaveChanges();
             return Ok();
@@ -114,6 +127,23 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
+            if (string.IsNullOrEmpty(request.Surname))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Name))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Patronymic))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Email))
+            {
+                return BadRequest();
+            }
+
             user.Surname = request.Surname;
             user.Name = request.Name;
             user.Patronymic = request.Patronymic;
@@ -122,16 +152,45 @@ namespace SelfSign.Controllers
             _context.SaveChanges();
             return Ok(user);
         }
-        [HttpPut("citizen")]
+        [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] CitizenUpdateRequest request)
         {
+            if (string.IsNullOrEmpty(request.Name))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Surname))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Gender))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Patronymic))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Serial))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Number))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.BirthPlace))
+            {
+                return BadRequest();
+            }
             var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
             if (user == null)
             {
                 return NotFound();
             }
+
             var gender = new Gender();
-            Enum.TryParse(request.Gender,out gender);
+            Enum.TryParse(request.Gender, out gender);
             user.Name = request.Name;
             user.Surname = request.Surname;
             user.Patronymic = request.Patronymic;
@@ -143,34 +202,24 @@ namespace SelfSign.Controllers
             user.SubDivisionAddress = request.SubDivisionAddress;
             user.SubDivisionCode = request.SubDivisionCode;
             user.BirthPlace = request.BirthPlace;
-            user.Citizenship = "RU";
-            _context.SaveChanges();
-            return Ok(user);
-        }
-        [HttpPut("foreigner")]
-        public async Task<IActionResult> Update([FromBody] ForeignerUpdateRequest request)
-        {
-            var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            var gender = new Gender();
-            
-            Enum.TryParse(request.Gender, out gender);
+            user.Gender = request.Gender;
+            user.RegionCode = request.RegionCode;
 
-            user.IssueDate = DateTime.Parse(request.IssueDate, CultureInfo.GetCultureInfo("ru-RU")).ToUniversalTime(); 
-            user.BirthDate = DateTime.Parse(request.BirthDate, CultureInfo.GetCultureInfo("ru-RU")).ToUniversalTime();
-            user.Serial = request.Serial;
-            user.Number = request.Number;
-            user.RegAddress = request.RegAddress;
-            user.SubDivisionAddress = request.SubDivisionAddress;
-            user.SubDivisionCode = request.SubDivisionCode;
-            user.BirthPlace = request.BirthPlace;
-            user.Citizenship = request.Citizenship;
+            user.Citizenship = "RU";
+            if (!string.IsNullOrEmpty(request.Citizenship))
+            {
+                user.Citizenship = request.Citizenship;
+            }
+            if (!string.IsNullOrEmpty(request.Email) && !string.IsNullOrEmpty(request.Phone))
+            {
+                user.Phone = request.Phone;
+                user.Email = request.Email;
+            }
+
             _context.SaveChanges();
             return Ok(user);
         }
+
 
     }
     public class CreateUserRequest
@@ -206,25 +255,12 @@ namespace SelfSign.Controllers
         public string SubDivisionCode { get; set; }
         public string SubDivisionAddress { get; set; }
         public string Gender { get; set; }
-
-    }
-    public class ForeignerUpdateRequest
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public string Surname { get; set; }
-        public string Patronymic { get; set; }
-        public string Serial { get; set; }
-        public string Number { get; set; }
-        public string RegAddress { get; set; }
-        public string BirthPlace { get; set; }
-        public string BirthDate { get; set; }
-        public string IssueDate { get; set; }
-        public string SubDivisionCode { get; set; }
-        public string SubDivisionAddress { get; set; }
-        public string Gender { get; set; }
+        public int RegionCode { get; set; }
         public string Citizenship { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
     }
+
     public class InnUpdateRequest
     {
         public Guid Id { get; set; }
@@ -235,4 +271,6 @@ namespace SelfSign.Controllers
         public Guid Id { get; set; }
         public string Snils { get; set; }
     }
+
+
 }

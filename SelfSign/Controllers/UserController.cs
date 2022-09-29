@@ -256,9 +256,9 @@ namespace SelfSign.Controllers
         public string SubDivisionAddress { get; set; }
         public string Gender { get; set; }
         public int RegionCode { get; set; }
-        public string Citizenship { get; set; }
-        public string Phone { get; set; }
-        public string Email { get; set; }
+        public string? Citizenship { get; set; }
+        public string? Phone { get; set; }
+        public string? Email { get; set; }
     }
 
     public class InnUpdateRequest

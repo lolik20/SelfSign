@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SelfSign.Entities;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace SelfSign.Controllers
 {
@@ -61,11 +62,17 @@ namespace SelfSign.Controllers
         [HttpPut("inn")]
         public async Task<IActionResult> Inn([FromBody]InnUpdateRequest request)
         {
+            var validInn = Regex.Match(request.Inn, "^\\d{12}$");
+            if (!validInn.Success)
+            {
+                return BadRequest();
+            }
             var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
             if (user == null)
             {
                 return NotFound();
             }
+           
             user.Inn = request.Inn;
             _context.SaveChanges();
             return Ok();
@@ -73,6 +80,11 @@ namespace SelfSign.Controllers
         [HttpPut("snils")]
         public async Task<IActionResult> Snils([FromBody] SnilsUpdateRequest request)
         {
+            var validSnils = Regex.Match(request.Snils, "^\\d{3}-\\d{3}-\\d{3}-\\d{2}$");
+            if (!validSnils.Success)
+            {
+                return BadRequest();
+            }
             var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
             if (user == null)
             {
@@ -85,6 +97,11 @@ namespace SelfSign.Controllers
         [HttpPut("first")]
         public async Task<IActionResult> Update([FromBody] FirstUpdateRequest request)
         {
+            var validPhone = Regex.Match(request.Phone, "^\\+\\d{11}$");
+            if (!validPhone.Success)
+            {
+                return BadRequest();
+            }
             var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
             if (user == null)
             {

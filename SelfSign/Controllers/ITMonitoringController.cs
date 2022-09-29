@@ -20,7 +20,7 @@ namespace SelfSign.Controllers
             _httpClient = new HttpClient();
             urls = new Dictionary<ITMonitoringMethods, string>();
             urls.Add(ITMonitoringMethods.Authorize, "https://api-test.digitaldeal.pro/ds/v1/auth/token");
-            urls.Add(ITMonitoringMethods.Request, "https://api-test.digitaldeal.pro/ds/v1/request");
+            urls.Add(ITMonitoringMethods.Request, "https://api-test.digitaldeal.pro/ds/v1/requests");
             urls.Add(ITMonitoringMethods.TwoFactor, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/dss/2fa");
             urls.Add(ITMonitoringMethods.Confirmation, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/send");
             Authorize();
@@ -41,7 +41,7 @@ namespace SelfSign.Controllers
                 "application/json"));
             var requestStrin = await response.RequestMessage.Content.ReadAsStringAsync();
             var responseString = await response.Content.ReadAsStringAsync();
-            _httpClient.DefaultRequestHeaders.Add("Authorization", responseString);
+            _httpClient.DefaultRequestHeaders.Add("Authorization",$"Bearer {responseString}");
         }
         [HttpGet("request")]
         public async Task<IActionResult> Request([FromQuery]Guid id)
@@ -51,9 +51,11 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
+            var gender = new Gender();
+            Enum.TryParse(user.Gender,out gender);
             var request = new
             {
-                OwnerType=0,
+                OwnerType=1,
                 Contacts = new
                 {
                     Email = user.Email,
@@ -63,32 +65,34 @@ namespace SelfSign.Controllers
                 {
                     City = user.BirthPlace,
                     Value = user.RegAddress,
+                    
                 },
                 Owner = new
                 {
                     Inn = user.Inn,
-                    BirthDate=user.BirthDate.ToShortDateString(),
+                    BirthDate=user.BirthDate.ToString("yyyy-MM-dd"),
                     BirthPlace=user.BirthPlace,
                     Snils=user.Snils,
                     Passport = new
                     {
                         Series= user.Serial,
                         Number = user.Number,
-                        IssueDate = user.RegDate.ToShortDateString(),
+                        IssueDate = user.RegDate.ToString("yyyy-MM-dd"),
                         IssuingAuthorityCode =user.SubDivisionCode,
                         IssuingAuthorityName = user.SubDivisionAddress
                     },
                     FirstName = user.Name,
                     LastName =user.Surname,
                     MiddleName=user.Patronymic,
-                    Gender=user.Gender,
+                    Gender=(int)gender,
                     CitizenshipCode=643
                 },
-                TarrifId= "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                TarrifId= "8d9ea681-3cdb-4aa5-9ba6-7cb91f5e120a"
             };
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Request).Value;
             var response = await _httpClient.PostAsync(url, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
-            dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+            var responseString = await response.Content.ReadAsStringAsync();
+            dynamic result = JsonConvert.DeserializeObject(responseString);
             user.MyDssRequestId = result;
 
             return Ok(result);

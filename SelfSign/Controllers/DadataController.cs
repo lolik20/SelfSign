@@ -39,7 +39,7 @@ namespace SelfSign.Controllers
                 HttpContext.Response.Headers.Add("Access-Control-Allow-Headers", "X-Requested-With");
             }
         }
-        private async Task<List<DadataResponse>> GetData(string request, DadataMethod method)
+        private async Task<List<FormatedObject>> GetData(string request, DadataMethod method)
         {
             AddResponseHeaders();
             var requestModel = new
@@ -53,7 +53,11 @@ namespace SelfSign.Controllers
           if ((int)response.StatusCode == 200)
             {
                 var responseJson = JsonConvert.DeserializeObject<DadataWrapper>(responseString);
-                return responseJson.suggestions;
+                return  responseJson.suggestions.Select(x => new FormatedObject
+                {
+                    Value = x.value,
+                    Kladr = x.data.city_kladr_id
+                }).ToList();
             }
             return null;
         }
@@ -77,6 +81,11 @@ namespace SelfSign.Controllers
             }
             return BadRequest();
         }
+    }
+    public class FormatedObject
+    {
+        public string Value { get; set; }
+        public long? Kladr { get; set; }
     }
     public class DadataWrapper
     {

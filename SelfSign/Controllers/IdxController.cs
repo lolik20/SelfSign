@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using SelfSign.Entities;
 using System.Text;
 
 namespace SelfSign.Controllers
@@ -11,10 +12,11 @@ namespace SelfSign.Controllers
         private HttpClient _httpClient;
         private IConfiguration _configuration;
         private Dictionary<IdxMethod, string> urls;
-
-        public IdxController(IConfiguration configuration)
+        private ApplicationContext _context;
+        public IdxController(IConfiguration configuration, ApplicationContext context)
         {
             Initial(configuration);
+            _context = context;
         }
         private void Initial(IConfiguration configuration)
         {
@@ -38,26 +40,67 @@ namespace SelfSign.Controllers
                 HttpContext.Response.Headers.Add("Access-Control-Allow-Headers", "X-Requested-With");
             }
         }
+        private bool CheckUser(Guid id)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Id == id);
+            if (user == null)
+            {
+                return false;
+            }
+            return true;
+        }
+        private async Task AddDocument(IFormFile file, Guid userId, DocumentType documentType)
+        {
+            var newDocument = new Document
+            {
+                DocumentType = documentType,
+                UserId = userId
+            };
+            var addedDocument = _context.Documents.Add(newDocument);
+            string fileUrl = await FileService.AddFile(file, userId, addedDocument.Entity.Id);
+            addedDocument.Entity.FileUrl = fileUrl;
+            _context.SaveChanges();
+        }
         [HttpPost("first")]
         public async Task<IActionResult> FirstPhoto([FromForm] PassportRequest request)
         {
+            var isUser = CheckUser(request.Id);
+            if (!isUser)
+            {
+                return NotFound();
+            }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
             var response = await PostData(request.file, keys, IdxMethod.First);
+            await AddDocument(request.file, request.Id, DocumentType.First);
             return Ok(response);
         }
 
         [HttpPost("second")]
         public async Task<IActionResult> SecondPhoto([FromForm] PassportRequest request)
         {
+            var isUser = CheckUser(request.Id);
+            if (!isUser)
+            {
+                return NotFound();
+            }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
             var response = await PostData(request.file, keys, IdxMethod.First);
+            await AddDocument(request.file, request.Id, DocumentType.Second);
+
             return Ok(response);
         }
         [HttpPost("snils")]
         public async Task<IActionResult> Snils([FromForm] PassportRequest request)
         {
+            var isUser = CheckUser(request.Id);
+            if (!isUser)
+            {
+                return NotFound();
+            }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
             var response = await PostData(request.file, keys, IdxMethod.Snils);
+            await AddDocument(request.file, request.Id, DocumentType.Snils);
+
             return Ok(response);
         }
         [HttpPost("inn")]
@@ -108,6 +151,7 @@ namespace SelfSign.Controllers
     }
     public class PassportRequest
     {
+        public Guid Id { get; set; }
         public IFormFile file { get; set; }
     }
     public class InnRequest

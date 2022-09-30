@@ -253,6 +253,7 @@ namespace SelfSign.Controllers
         public string BirthDate { get; set; }
         public string IssueDate { get; set; }
         public string SubDivisionCode { get; set; }
+        
         public string SubDivisionAddress { get; set; }
         public string Gender { get; set; }
         public int RegionCode { get; set; }

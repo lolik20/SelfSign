@@ -8,5 +8,7 @@ namespace SelfSign.Entities
         [ForeignKey("User")]
         public Guid UserId { get; set; }
         public User User { get; set; }
+        public DocumentType DocumentType { get; set; }
+        public string FileUrl { get; set; }
     }
 }

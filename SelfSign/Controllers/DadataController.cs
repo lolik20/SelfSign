@@ -86,6 +86,11 @@ namespace SelfSign.Controllers
     public class DadataResponse
     {
         public string value { get; set; }
+        public Data data { get; set; } 
+    }
+    public class Data
+    {
+        public long city_kladr_id { get; set; }
     }
     enum DadataMethod
     {

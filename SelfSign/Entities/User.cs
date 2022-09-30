@@ -25,6 +25,6 @@
         public List<Document> Documents { get; set; }
         public int RegionCode { get; set; }
         public SignatureType SignatureType { get; set; }
-        public string? MyDssRequestId { get; set; }
+        public Guid? MyDssRequestId { get; set; }
     }
 }

@@ -90,7 +90,7 @@ namespace SelfSign.Controllers
     }
     public class Data
     {
-        public long city_kladr_id { get; set; }
+        public long? city_kladr_id { get; set; }
     }
     enum DadataMethod
     {

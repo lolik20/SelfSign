@@ -23,7 +23,7 @@
         public string Gender { get; set; }
         [System.Text.Json.Serialization.JsonIgnore]
         public List<Document> Documents { get; set; }
-        public int RegionCode { get; set; }
+        public long RegionCode { get; set; }
         public SignatureType SignatureType { get; set; }
         public Guid? MyDssRequestId { get; set; }
     }

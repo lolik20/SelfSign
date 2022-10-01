@@ -32,7 +32,7 @@ namespace SelfSign.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
-            var validPhone = Regex.Match(request.Phone, "^\\+\\d{11}$");
+            var validPhone = Regex.Match(request.Phone, _regex.GetValue<string>("Phone"));
             if (!validPhone.Success)
             {
                 return BadRequest();

@@ -12,8 +12,8 @@ using SelfSign;
 namespace SelfSign.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20220927194458_CitiezenshipColumn")]
-    partial class CitiezenshipColumn
+    [Migration("20221001110646_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -29,6 +29,13 @@ namespace SelfSign.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<int>("DocumentType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FileUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -72,6 +79,9 @@ namespace SelfSign.Migrations
                     b.Property<DateTime>("IssueDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("MyDssRequestId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -94,6 +104,9 @@ namespace SelfSign.Migrations
 
                     b.Property<DateTime>("RegDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("RegionCode")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Serial")
                         .IsRequired()

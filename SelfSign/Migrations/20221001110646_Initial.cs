@@ -21,10 +21,20 @@ namespace SelfSign.Migrations
                     Serial = table.Column<string>(type: "text", nullable: false),
                     Number = table.Column<string>(type: "text", nullable: false),
                     RegAddress = table.Column<string>(type: "text", nullable: false),
+                    BirthPlace = table.Column<string>(type: "text", nullable: false),
+                    BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IssueDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Citizenship = table.Column<string>(type: "text", nullable: false),
                     SubDivisionCode = table.Column<string>(type: "text", nullable: false),
                     SubDivisionAddress = table.Column<string>(type: "text", nullable: false),
                     Snils = table.Column<string>(type: "text", nullable: false),
-                    Inn = table.Column<string>(type: "text", nullable: false)
+                    Inn = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Phone = table.Column<string>(type: "text", nullable: false),
+                    Gender = table.Column<string>(type: "text", nullable: false),
+                    RegionCode = table.Column<long>(type: "bigint", nullable: false),
+                    SignatureType = table.Column<int>(type: "integer", nullable: false),
+                    MyDssRequestId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -36,7 +46,9 @@ namespace SelfSign.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    DocumentType = table.Column<int>(type: "integer", nullable: false),
+                    FileUrl = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

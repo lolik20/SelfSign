@@ -101,7 +101,7 @@ namespace SelfSign.Controllers
             
             var responseString = await response.Content.ReadAsStringAsync();
             dynamic result = JsonConvert.DeserializeObject(responseString);
-            if ((int)result.status != 400)
+            if (response.StatusCode==System.Net.HttpStatusCode.Created)
             {
                 user.MyDssRequestId = result;
 

@@ -47,19 +47,19 @@ namespace SelfSign.Controllers
                 var responseString = await response.Content.ReadAsStringAsync();
                 _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {responseString}");
             }
-            
+
         }
         [HttpGet("request")]
         public async Task<IActionResult> Request([FromQuery] Guid id)
         {
-            
+
             var user = _context.Users.FirstOrDefault(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
             }
             await Authorize();
-           
+
             var request = new
             {
                 OwnerType = 1,
@@ -98,12 +98,12 @@ namespace SelfSign.Controllers
             };
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Request).Value;
             var response = await _httpClient.PostAsync(url, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
-            
+
             var responseString = await response.Content.ReadAsStringAsync();
             dynamic result = JsonConvert.DeserializeObject(responseString);
-            if (response.StatusCode==System.Net.HttpStatusCode.Created)
+            if (response.StatusCode == System.Net.HttpStatusCode.Created)
             {
-                user.MyDssRequestId = result;
+                user.MyDssRequestId = Guid.Parse(result);
 
                 _context.SaveChanges();
                 return Ok(result);
@@ -156,7 +156,7 @@ namespace SelfSign.Controllers
             }
             await Authorize();
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Documents).Value;
-            Guid requestId = (Guid)user.MyDssRequestId; 
+            Guid requestId = (Guid)user.MyDssRequestId;
             var response = await _httpClient.PostAsync(url.Replace("$requestId", requestId.ToString()), null);
             dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
             return Ok(result);
@@ -169,7 +169,7 @@ namespace SelfSign.Controllers
         Request = 1,
         TwoFactor = 2,
         Confirmation = 3,
-        Documents=4
+        Documents = 4
     }
 
 }

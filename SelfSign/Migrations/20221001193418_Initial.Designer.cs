@@ -12,7 +12,7 @@ using SelfSign;
 namespace SelfSign.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20221001110646_Initial")]
+    [Migration("20221001193418_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -68,9 +68,8 @@ namespace SelfSign.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Gender")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Gender")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Inn")
                         .IsRequired()

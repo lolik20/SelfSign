@@ -31,7 +31,7 @@ namespace SelfSign.Migrations
                     Inn = table.Column<string>(type: "text", nullable: false),
                     Email = table.Column<string>(type: "text", nullable: false),
                     Phone = table.Column<string>(type: "text", nullable: false),
-                    Gender = table.Column<string>(type: "text", nullable: false),
+                    Gender = table.Column<int>(type: "integer", nullable: false),
                     RegionCode = table.Column<long>(type: "bigint", nullable: false),
                     SignatureType = table.Column<int>(type: "integer", nullable: false),
                     MyDssRequestId = table.Column<Guid>(type: "uuid", nullable: true)

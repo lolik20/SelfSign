@@ -11,9 +11,13 @@ namespace SelfSign.Controllers
     public class UserController : ControllerBase
     {
         private readonly ApplicationContext _context;
-        public UserController(ApplicationContext context)
+        private readonly IConfiguration _configuration;
+        private readonly IConfigurationSection _regex;
+        public UserController(ApplicationContext context,IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
+            _regex = _configuration.GetSection("regex");
         }
         [HttpGet]
         public async Task<IActionResult> GetUser([FromQuery] Guid id)
@@ -82,7 +86,7 @@ namespace SelfSign.Controllers
         [HttpPut("inn")]
         public async Task<IActionResult> Inn([FromBody] InnUpdateRequest request)
         {
-            var validInn = Regex.Match(request.Inn, "^\\d{12}$");
+            var validInn = Regex.Match(request.Inn, _regex.GetValue<string>("Inn"));
             if (!validInn.Success)
             {
                 return BadRequest();
@@ -100,7 +104,7 @@ namespace SelfSign.Controllers
         [HttpPut("snils")]
         public async Task<IActionResult> Snils([FromBody] SnilsUpdateRequest request)
         {
-            var validSnils = Regex.Match(request.Snils, "^\\d{3}-\\d{3}-\\d{3}-\\d{2}$");
+            var validSnils = Regex.Match(request.Snils, _regex.GetValue<string>("Snils"));
             if (!validSnils.Success)
             {
                 return BadRequest();
@@ -117,11 +121,12 @@ namespace SelfSign.Controllers
         [HttpPut("first")]
         public async Task<IActionResult> Update([FromBody] FirstUpdateRequest request)
         {
-            var validPhone = Regex.Match(request.Phone, "^\\+\\d{11}$");
+            var validPhone = Regex.Match(request.Phone, _regex.GetValue<string>("Phone"));
             if (!validPhone.Success)
             {
                 return BadRequest();
             }
+            var validEmail = Regex.Match(request.Email, _regex.GetValue<string>("Email"));
             var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
             if (user == null)
             {

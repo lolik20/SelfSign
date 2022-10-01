@@ -106,11 +106,26 @@ namespace SelfSign.Controllers
         [HttpPost("inn")]
         public async Task<IActionResult> Inn([FromBody] InnRequest request)
         {
+            var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
+            if (user == null)
+            {
+                return NotFound();
+            }
             AddResponseHeaders();
             var keys = _configuration.GetSection("Idx");
-            request.secretKey = keys.GetValue<string>("secretKey");
-            request.accessKey = keys.GetValue<string>("accessKey");
+
             string url = urls.First(x => x.Key == IdxMethod.Inn).Value;
+            var idxRequest = new InnIdxRequest
+            {
+                birthDate = user.BirthDate.ToString("yyyy-MM-dd"),
+                passportDate = user.IssueDate.ToString("yyyy-MM-dd"),
+                accessKey = keys.GetValue<string>("secretKey"),
+                secretKey = keys.GetValue<string>("accessKey"),
+                firstName = user.Name,
+                lastName = user.Surname,
+                midName = user.Patronymic,
+                passportNumber = user.Serial + user.Number
+            };
             var response = await _httpClient.PostAsync(url, new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"));
             var responseString = await response.Content.ReadAsStringAsync();
             var requestString = await response.RequestMessage.Content.ReadAsStringAsync();
@@ -152,9 +167,9 @@ namespace SelfSign.Controllers
     public class PassportRequest
     {
         public Guid Id { get; set; }
-        public IFormFile file { get; set; }
+        public IFormFile? file { get; set; }
     }
-    public class InnRequest
+    public class InnIdxRequest
     {
         public string lastName { get; set; }
         public string firstName { get; set; }
@@ -162,11 +177,13 @@ namespace SelfSign.Controllers
         public string birthDate { get; set; }
         public string passportNumber { get; set; }
         public string passportDate { get; set; }
-        [System.Text.Json.Serialization.JsonIgnore]
         public string accessKey { get; set; }
-        [System.Text.Json.Serialization.JsonIgnore]
-
         public string secretKey { get; set; }
+    }
+    public class InnRequest
+    {
+        public Guid Id { get; set; }
+
     }
 
 

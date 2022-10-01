@@ -121,7 +121,7 @@ namespace SelfSign.Controllers
             await Authorize();
             var request = new
             {
-                Dss2fa = 1,
+                Dss2fa = 2,
                 Codeword = alias
             };
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.TwoFactor).Value;
@@ -129,7 +129,13 @@ namespace SelfSign.Controllers
             Guid requestId = (Guid)user.MyDssRequestId;
             var response = await _httpClient.PostAsync(url.Replace("$requestId", requestId.ToString()), new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
             dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
-            return Ok(result);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return Ok(result);
+
+            }
+            return BadRequest();
         }
         [HttpGet("confirmation")]
         public async Task<IActionResult> Confirmation(Guid id)

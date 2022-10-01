@@ -24,35 +24,41 @@ namespace SelfSign.Controllers
             urls.Add(ITMonitoringMethods.TwoFactor, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/dss/2fa");
             urls.Add(ITMonitoringMethods.Confirmation, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/send");
             urls.Add(ITMonitoringMethods.Documents, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/documents");
-
-            Authorize();
         }
         private async Task Authorize()
         {
-            var credentials = _configuration.GetSection("ItMonitoring");
-            var request = new
+            var authToken = _httpClient.DefaultRequestHeaders.FirstOrDefault(x => x.Key == "Authorization");
+            if (authToken.Value == null)
             {
-                Login = credentials.GetValue<string>("Login"),
-                Password = credentials.GetValue<string>("Password")
-            };
 
-            var response = await _httpClient.PostAsync(
-                urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Authorize).Value,
-                new StringContent(JsonConvert.SerializeObject(request),
-                System.Text.Encoding.UTF8,
-                "application/json"));
-            var requestStrin = await response.RequestMessage.Content.ReadAsStringAsync();
-            var responseString = await response.Content.ReadAsStringAsync();
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {responseString}");
+                var credentials = _configuration.GetSection("ItMonitoring");
+                var request = new
+                {
+                    Login = credentials.GetValue<string>("Login"),
+                    Password = credentials.GetValue<string>("Password")
+                };
+
+                var response = await _httpClient.PostAsync(
+                    urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Authorize).Value,
+                    new StringContent(JsonConvert.SerializeObject(request),
+                    System.Text.Encoding.UTF8,
+                    "application/json"));
+                var requestStrin = await response.RequestMessage.Content.ReadAsStringAsync();
+                var responseString = await response.Content.ReadAsStringAsync();
+                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {responseString}");
+            }
+            
         }
         [HttpGet("request")]
         public async Task<IActionResult> Request([FromQuery] Guid id)
         {
+            
             var user = _context.Users.FirstOrDefault(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
             }
+            await Authorize();
             var gender = new Gender();
             Enum.TryParse(user.Gender, out gender);
             var request = new
@@ -96,9 +102,14 @@ namespace SelfSign.Controllers
             
             var responseString = await response.Content.ReadAsStringAsync();
             dynamic result = JsonConvert.DeserializeObject(responseString);
-            user.MyDssRequestId = result;
+            if ((int)result.status != 400)
+            {
+                user.MyDssRequestId = result;
 
-            return Ok(result);
+                _context.SaveChanges();
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
         [HttpGet("twofactor")]
         public async Task<IActionResult> TwoFactor([FromQuery] Guid id, string alias)
@@ -108,6 +119,7 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
+            await Authorize();
             var request = new
             {
                 Dss2fa = 1,
@@ -128,6 +140,7 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
+            await Authorize();
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Confirmation).Value;
             Guid requestId = (Guid)user.MyDssRequestId;
             var response = await _httpClient.PostAsync(url.Replace("$requestId", requestId.ToString()), null);
@@ -142,8 +155,9 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
+            await Authorize();
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Documents).Value;
-            Guid requestId = (Guid)user.MyDssRequestId;
+            Guid requestId = (Guid)user.MyDssRequestId; 
             var response = await _httpClient.PostAsync(url.Replace("$requestId", requestId.ToString()), null);
             dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
             return Ok(result);

@@ -56,7 +56,7 @@ namespace SelfSign.Controllers
                 return  responseJson.suggestions.Select(x => new FormatedObject
                 {
                     Value = x.value,
-                    Kladr = x.data.city_kladr_id
+                    Kladr = x.data.region_kladr_id/ 100000000000
                 }).ToList();
             }
             return null;
@@ -99,7 +99,7 @@ namespace SelfSign.Controllers
     }
     public class Data
     {
-        public long? city_kladr_id { get; set; }
+        public long? region_kladr_id { get; set; }
     }
     enum DadataMethod
     {

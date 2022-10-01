@@ -59,8 +59,7 @@ namespace SelfSign.Controllers
                 return NotFound();
             }
             await Authorize();
-            var gender = new Gender();
-            Enum.TryParse(user.Gender, out gender);
+           
             var request = new
             {
                 OwnerType = 1,
@@ -92,7 +91,7 @@ namespace SelfSign.Controllers
                     FirstName = user.Name,
                     LastName = user.Surname,
                     MiddleName = user.Patronymic,
-                    Gender = (int)gender,
+                    Gender = user.Gender,
                     CitizenshipCode = 643
                 },
                 TariffId = "8d9ea681-3cdb-4aa5-9ba6-7cb91f5e120a"

@@ -69,7 +69,7 @@ namespace SelfSign.Controllers
                     SubDivisionCode = "",
                     BirthPlace = "",
                     Email = "",
-                    Gender = "",
+                    Gender = new Gender(),
                     Inn = "",
                     Number = "",
                     RegAddress = "",
@@ -207,7 +207,7 @@ namespace SelfSign.Controllers
             user.SubDivisionAddress = request.SubDivisionAddress;
             user.SubDivisionCode = request.SubDivisionCode;
             user.BirthPlace = request.BirthPlace;
-            user.Gender = request.Gender;
+            user.Gender = gender;
             user.RegionCode = request.RegionCode;
 
             user.Citizenship = "RU";

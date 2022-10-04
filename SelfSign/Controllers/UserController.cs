@@ -127,8 +127,7 @@ namespace SelfSign.Controllers
             {
                 return BadRequest();
             }
-            var validEmail = Regex.Match(request.Email, _regex.GetValue<string>("Email"));
-            if (!validEmail.Success)
+            if (string.IsNullOrEmpty(request.Email)||!request.Email.Contains("@"))
             {
                 return BadRequest();
 

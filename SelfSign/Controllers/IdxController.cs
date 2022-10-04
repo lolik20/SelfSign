@@ -71,7 +71,7 @@ namespace SelfSign.Controllers
             }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
             var response = await PostData(request.file, keys, IdxMethod.First);
-            await AddDocument(request.file, request.Id, DocumentType.First);
+            await AddDocument(request.file, request.Id, DocumentType.Passport);
             return Ok(response);
         }
 
@@ -85,7 +85,7 @@ namespace SelfSign.Controllers
             }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
             var response = await PostData(request.file, keys, IdxMethod.First);
-            await AddDocument(request.file, request.Id, DocumentType.Second);
+            await AddDocument(request.file, request.Id, DocumentType.Passport);
 
             return Ok(response);
         }

@@ -24,6 +24,8 @@ namespace SelfSign.Controllers
             urls.Add(ITMonitoringMethods.TwoFactor, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/dss/2fa");
             urls.Add(ITMonitoringMethods.Confirmation, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/send");
             urls.Add(ITMonitoringMethods.Documents, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/documents");
+            urls.Add(ITMonitoringMethods.File, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/documents/$docTypeCode/files");
+
         }
         private async Task Authorize()
         {
@@ -132,10 +134,20 @@ namespace SelfSign.Controllers
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
+              await  Documents(user);
                 return Ok(result);
 
             }
-            return BadRequest();
+            return BadRequest(result);
+        }
+        private async Task<dynamic> Confirm(User user)
+        {
+            await Authorize();
+            string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Confirmation).Value;
+            Guid requestId = (Guid)user.MyDssRequestId;
+            var response = await _httpClient.PostAsync(url.Replace("$requestId", requestId.ToString()), null);
+            dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+            return result;
         }
         [HttpGet("confirmation")]
         public async Task<IActionResult> Confirmation(Guid id)
@@ -145,12 +157,34 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
-            await Authorize();
-            string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Confirmation).Value;
-            Guid requestId = (Guid)user.MyDssRequestId;
-            var response = await _httpClient.PostAsync(url.Replace("$requestId", requestId.ToString()), null);
-            dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+            var result = await Confirm(user);
             return Ok(result);
+        }
+        private async Task<dynamic> Documents(User user)
+        {
+            await Authorize();
+            string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Documents).Value;
+            Guid requestId = (Guid)user.MyDssRequestId;
+            var response = await _httpClient.GetAsync(url.Replace("$requestId", requestId.ToString()));
+            dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+            foreach (var document in result)
+            {
+                if (document.DocTypeCode == 6)
+                {
+                    await SendDocument(6, requestId);
+                }
+            }
+            return result;
+        }
+        public async Task<bool> SendDocument(int docTypeCode,Guid requestId)
+        {
+            var document = _context.Documents.FirstOrDefault(x => x.DocumentType ==(DocumentType)docTypeCode);
+            var form = new MultipartFormDataContent();
+            var fileBytes = FromFile(file);
+            form.Add(fileBytes, "file", file.FileName);
+            string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.File).Value;
+            var response = await _httpClient.PostAsync(url.Replace("$docTypeCode", docTypeCode.ToString()).Replace("$requestId", requestId.ToString()), form);
+            return true;
         }
         [HttpGet("documents")]
         public async Task<IActionResult> GetDocuments(Guid id)
@@ -160,12 +194,8 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
-            await Authorize();
-            string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Documents).Value;
-            Guid requestId = (Guid)user.MyDssRequestId;
-            var response = await _httpClient.PostAsync(url.Replace("$requestId", requestId.ToString()), null);
-            dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
-            return Ok(result);
+            var result = await Documents(user);
+            return result;
         }
 
     }
@@ -175,7 +205,8 @@ namespace SelfSign.Controllers
         Request = 1,
         TwoFactor = 2,
         Confirmation = 3,
-        Documents = 4
+        Documents = 4,
+        File=5
     }
 
 }

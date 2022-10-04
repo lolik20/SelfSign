@@ -178,12 +178,12 @@ namespace SelfSign.Controllers
         }
         public async Task<bool> SendDocument(int docTypeCode,Guid requestId)
         {
-            var document = _context.Documents.FirstOrDefault(x => x.DocumentType ==(DocumentType)docTypeCode);
-            var form = new MultipartFormDataContent();
-            var fileBytes = FromFile(file);
-            form.Add(fileBytes, "file", file.FileName);
-            string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.File).Value;
-            var response = await _httpClient.PostAsync(url.Replace("$docTypeCode", docTypeCode.ToString()).Replace("$requestId", requestId.ToString()), form);
+            //var document = _context.Documents.FirstOrDefault(x => x.DocumentType ==(DocumentType)docTypeCode);
+            //var form = new MultipartFormDataContent();
+            //var fileBytes = FromFile(file);
+            //form.Add(fileBytes, "file", file.FileName);
+            //string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.File).Value;
+            //var response = await _httpClient.PostAsync(url.Replace("$docTypeCode", docTypeCode.ToString()).Replace("$requestId", requestId.ToString()), form);
             return true;
         }
         [HttpGet("documents")]

@@ -101,6 +101,45 @@ namespace SelfSign.Controllers
             _context.SaveChanges();
             return Ok();
         }
+        [HttpPut("first")]
+        public async Task<IActionResult> Update([FromBody] FirstUpdateRequest request)
+        {
+            var validPhone = Regex.Match(request.Phone, _regex.GetValue<string>("Phone"));
+            if (!validPhone.Success)
+            {
+                return BadRequest();
+            }
+            var validEmail = Regex.Match(request.Email, _regex.GetValue<string>("Email"));
+            var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            if (string.IsNullOrEmpty(request.Surname))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Name))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Patronymic))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.Email))
+            {
+                return BadRequest();
+            }
+
+            user.Surname = request.Surname;
+            user.Name = request.Name;
+            user.Patronymic = request.Patronymic;
+            user.Phone = request.Phone;
+            user.Email = request.Email;
+            _context.SaveChanges();
+            return Ok(user);
+        }
         [HttpPut("snils")]
         public async Task<IActionResult> Snils([FromBody] SnilsUpdateRequest request)
         {

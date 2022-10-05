@@ -166,11 +166,11 @@ namespace SelfSign.Controllers
             //{
             //    return BadRequest();
             //}
-            if (string.IsNullOrEmpty(request.Email)||!request.Email.Contains("@"))
-            {
-                return BadRequest();
+            //if (string.IsNullOrEmpty(request.Email)||!request.Email.Contains("@"))
+            //{
+            //    return BadRequest();
 
-            }
+            //}
             if (string.IsNullOrEmpty(request.Name))
             {
                 return BadRequest();

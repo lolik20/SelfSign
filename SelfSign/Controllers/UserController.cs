@@ -122,11 +122,11 @@ namespace SelfSign.Controllers
         [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] CitizenUpdateRequest request)
         {
-            var validPhone = Regex.Match(request.Phone, _regex.GetValue<string>("Phone"));
-            if (!validPhone.Success)
-            {
-                return BadRequest();
-            }
+            //var validPhone = Regex.Match(request.Phone, _regex.GetValue<string>("Phone"));
+            //if (!validPhone.Success)
+            //{
+            //    return BadRequest();
+            //}
             if (string.IsNullOrEmpty(request.Email)||!request.Email.Contains("@"))
             {
                 return BadRequest();

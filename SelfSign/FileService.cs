@@ -27,5 +27,11 @@ namespace SelfSign
             string result = Convert.ToBase64String(bytes);
             return result;
         }
+        public static byte[] GetDocument(string path)
+        {
+            var filePath = Path.Combine(Environment.CurrentDirectory, path);
+            var bytes = File.ReadAllBytes(filePath);
+            return bytes;
+        }
     }
 }

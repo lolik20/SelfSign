@@ -70,9 +70,9 @@ namespace SelfSign.Controllers
                 return NotFound();
             }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
-            var response = await PostData(request.file, keys, IdxMethod.First);
+            //var response = await PostData(request.file, keys, IdxMethod.First);
             await AddDocument(request.file, request.Id, DocumentType.Passport);
-            return Ok(response);
+            return Ok(null);
         }
 
         [HttpPost("second")]
@@ -84,10 +84,10 @@ namespace SelfSign.Controllers
                 return NotFound();
             }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
-            var response = await PostData(request.file, keys, IdxMethod.First);
+            //var response = await PostData(request.file, keys, IdxMethod.First);
             await AddDocument(request.file, request.Id, DocumentType.Passport);
 
-            return Ok(response);
+            return Ok(null);
         }
         [HttpPost("snils")]
         public async Task<IActionResult> Snils([FromForm] PassportRequest request)

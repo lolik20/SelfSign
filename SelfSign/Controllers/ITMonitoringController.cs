@@ -171,19 +171,25 @@ namespace SelfSign.Controllers
             {
                 if (document.DocTypeCode == 6)
                 {
-                    await SendDocument(6, requestId);
+                   bool isSended= await SendDocument(6, requestId);
+
                 }
             }
             return result;
         }
-        public async Task<bool> SendDocument(int docTypeCode,Guid requestId)
+        private async Task<bool> SendDocument(int docTypeCode,Guid requestId)
         {
-            //var document = _context.Documents.FirstOrDefault(x => x.DocumentType == (DocumentType)docTypeCode);
-            //var form = new MultipartFormDataContent();
-            //var fileBytes = FromFile(file);
-            //form.Add(fileBytes, "file", file.FileName);
-            //string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.File).Value;
-            //var response = await _httpClient.PostAsync(url.Replace("$docTypeCode", docTypeCode.ToString()).Replace("$requestId", requestId.ToString()), form);
+            var document = _context.Documents.FirstOrDefault(x => x.DocumentType == (DocumentType)docTypeCode);
+            if (document == null)
+            {
+                return false;
+            }
+            var form = new MultipartFormDataContent();
+            var fileBytes = FileService.GetDocument(document.FileUrl);
+            form.Add(new ByteArrayContent(fileBytes), "file", "file.jpg");
+            string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.File).Value;
+            var response = await _httpClient.PostAsync(url.Replace("$docTypeCode", docTypeCode.ToString()).Replace("$requestId", requestId.ToString()), form);
+            var responseString = await response.Content.ReadAsStringAsync();
             return true;
         }
         [HttpGet("documents")]

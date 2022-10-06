@@ -179,10 +179,7 @@ namespace SelfSign.Controllers
             {
                 return BadRequest();
             }
-            if (string.IsNullOrEmpty(request.Gender))
-            {
-                return BadRequest();
-            }
+            
             if (string.IsNullOrEmpty(request.Patronymic))
             {
                 return BadRequest();
@@ -204,9 +201,7 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
-
-            var gender = new Gender();
-            Enum.TryParse(request.Gender, out gender);
+            var gender = (Gender)Enum.ToObject(typeof(Gender), request.Gender);
             user.Name = request.Name;
             user.Surname = request.Surname;
             user.Patronymic = request.Patronymic;
@@ -271,7 +266,7 @@ namespace SelfSign.Controllers
         public string SubDivisionCode { get; set; }
         
         public string SubDivisionAddress { get; set; }
-        public string Gender { get; set; }
+        public int Gender { get; set; }
         public long RegionCode { get; set; }
         public string? Citizenship { get; set; }
         public string? Phone { get; set; }

@@ -110,7 +110,12 @@ namespace SelfSign.Controllers
                 _context.SaveChanges();
                 return Ok(result);
             }
-            return BadRequest(result);
+            var errors = new List<string>();
+            foreach(var error in result.errors)
+            {
+                errors.Add(error.Path);
+            }
+            return BadRequest(errors);
         }
         [HttpGet("twofactor")]
         public async Task<IActionResult> TwoFactor([FromQuery] Guid id, string alias)

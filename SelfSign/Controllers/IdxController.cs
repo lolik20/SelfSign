@@ -72,7 +72,7 @@ namespace SelfSign.Controllers
             var keys = _configuration.GetSection("Idx").AsEnumerable();
             var response = await PostData(request.file, keys, IdxMethod.First);
             await AddDocument(request.file, request.Id, DocumentType.Passport);
-            return Ok(null);
+            return Ok(response);
         }
 
         [HttpPost("second")]
@@ -87,7 +87,7 @@ namespace SelfSign.Controllers
             var response = await PostData(request.file, keys, IdxMethod.First);
             await AddDocument(request.file, request.Id, DocumentType.Passport);
 
-            return Ok(null);
+            return Ok(response);
         }
         [HttpPost("snils")]
         public async Task<IActionResult> Snils([FromForm] PassportRequest request)

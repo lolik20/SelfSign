@@ -171,6 +171,21 @@ namespace SelfSign.Controllers
             //    return BadRequest();
 
             //}
+            var date =new  DateTime();
+            if (DateTime.TryParse(request.IssueDate, out date)&&request.IssueDate.Length!=10)
+            {
+                return BadRequest();
+            }
+            if (DateTime.TryParse(request.BirthDate, out date)&&request.BirthDate.Length!=10)
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.RegAddress))
+            {
+                return BadRequest();
+            }
+
+
             if (string.IsNullOrEmpty(request.Name))
             {
                 return BadRequest();
@@ -193,6 +208,14 @@ namespace SelfSign.Controllers
                 return BadRequest();
             }
             if (string.IsNullOrEmpty(request.BirthPlace))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.SubDivisionAddress))
+            {
+                return BadRequest();
+            }
+            if (string.IsNullOrEmpty(request.SubDivisionCode)||request.SubDivisionCode=="0")
             {
                 return BadRequest();
             }

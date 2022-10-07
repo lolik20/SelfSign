@@ -71,6 +71,10 @@ namespace SelfSign.Controllers
             }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
             var response = await PostData(request.file, keys, IdxMethod.First);
+            if (response == null)
+            {
+                return BadRequest();
+            }
             await AddDocument(request.file, request.Id, DocumentType.Passport);
             return Ok(response);
         }
@@ -85,6 +89,10 @@ namespace SelfSign.Controllers
             }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
             var response = await PostData(request.file, keys, IdxMethod.First);
+            if(response == null)
+            {
+                return BadRequest();
+            }
             await AddDocument(request.file, request.Id, DocumentType.Passport);
 
             return Ok(response);
@@ -134,7 +142,7 @@ namespace SelfSign.Controllers
 
         }
 
-        private async Task<dynamic> PostData(IFormFile file, IEnumerable<KeyValuePair<string, string>> keys, IdxMethod method)
+        private async Task<Dictionary<string,string>> PostData(IFormFile file, IEnumerable<KeyValuePair<string, string>> keys, IdxMethod method)
         {
             AddResponseHeaders();
 
@@ -147,10 +155,24 @@ namespace SelfSign.Controllers
             }
             string url = urls.First(x => x.Key == method).Value;
             var response = await _httpClient.PostAsync(url, form);
-            var requestString = await response.RequestMessage.Content.ReadAsStringAsync();
+            //var response = await _httpClient.GetAsync("http://json-parser.com/974fc557/1.json");
             var responseString = await response.Content.ReadAsStringAsync();
+            
             dynamic obj = JsonConvert.DeserializeObject(responseString);
-            return obj;
+            if (obj.resultCode == 0)
+            {
+                var result = new Dictionary<string, string>();
+                foreach (var property in obj.items[0].fields)
+                {
+                    var propertyPath =(string) property.Path;
+                    var propertyName = propertyPath.Split(".")[2];
+                    var propertyValue = (string)property.ToString();
+                    var value = propertyValue.Split("\"")[5];
+                    result.Add(propertyName, value);
+                }
+                return result;
+            }
+            return null;
         }
 
         private ByteArrayContent FromFile(IFormFile formFile)
@@ -185,7 +207,11 @@ namespace SelfSign.Controllers
         public Guid Id { get; set; }
 
     }
-
+    public class IdxPassportResponse
+    {
+        
+    }
+    public 
 
     enum IdxMethod
     {

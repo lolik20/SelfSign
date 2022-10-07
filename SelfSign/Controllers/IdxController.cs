@@ -25,7 +25,7 @@ namespace SelfSign.Controllers
             urls = new Dictionary<IdxMethod, string>();
             urls.Add(IdxMethod.First, "https://api.id-x.org/idx/api2/parseAuto/multiple/passport");
             urls.Add(IdxMethod.Second, "https://api.id-x.org/idx/api2/parseAuto/multiple/passportRegistration");
-            urls.Add(IdxMethod.Inn, "https://api.id-x.org/idx/api2/getInnex");
+            urls.Add(IdxMethod.Inn, "https://service.nalog.ru/inn-proc.do");
             urls.Add(IdxMethod.Snils, "https://api.id-x.org/idx/api2/parseAuto/multiple/snils");
 
         }
@@ -127,24 +127,26 @@ namespace SelfSign.Controllers
             var keys = _configuration.GetSection("Idx");
 
             string url = urls.First(x => x.Key == IdxMethod.Inn).Value;
-            var idxRequest = new InnIdxRequest
-            {
-                birthDate = user.BirthDate.ToString("yyyy-MM-dd"),
-                passportDate = user.IssueDate.ToString("yyyy-MM-dd"),
-                accessKey = keys.GetValue<string>("secretKey"),
-                secretKey = keys.GetValue<string>("accessKey"),
-                firstName = user.Name,
-                lastName = user.Surname,
-                midName = user.Patronymic,
-                passportNumber = user.Serial + user.Number
-            };
-            var response = await _httpClient.PostAsync(url, new StringContent(JsonConvert.SerializeObject(idxRequest), Encoding.UTF8, "application/json"));
+            var formData = new MultipartFormDataContent();
+            formData.Add(new StringContent(user.Surname), "fam");
+            formData.Add(new StringContent(user.Name), "nam");
+            formData.Add(new StringContent(user.Patronymic), "otch");
+            formData.Add(new StringContent(user.BirthDate.ToString("dd.MM.yyyy")), "bdate");
+            formData.Add(new StringContent(""), "bplace");
+            formData.Add(new StringContent("21"), "doctype");
+            formData.Add(new StringContent($"{user.Serial} {user.Number}"), "docno");
+            formData.Add(new StringContent(user.IssueDate.ToString("dd.MM.yyyy")), "docdt");
+            formData.Add(new StringContent("innMy"), "c");
+            formData.Add(new StringContent(""), "captcha");
+            formData.Add(new StringContent(""), "captchaToken");
+
+            var response = await _httpClient.PostAsync(url, formData);
             var responseString = await response.Content.ReadAsStringAsync();
             var requestString = await response.RequestMessage.Content.ReadAsStringAsync();
             dynamic obj = JsonConvert.DeserializeObject(responseString);
-            if (obj.resultCode == 0)
+            if (obj.code == 1)
             {
-                return Ok(obj.inn);
+                return Ok((string)obj.inn);
             }
             return BadRequest();
 

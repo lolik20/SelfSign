@@ -172,11 +172,11 @@ namespace SelfSign.Controllers
 
             //}
             var date =new  DateTime();
-            if (DateTime.TryParse(request.IssueDate, out date)&&request.IssueDate.Length!=10)
+            if (request.IssueDate.Length!=10)
             {
                 return BadRequest();
             }
-            if (DateTime.TryParse(request.BirthDate, out date)&&request.BirthDate.Length!=10)
+            if (request.BirthDate.Length!=10)
             {
                 return BadRequest();
             }

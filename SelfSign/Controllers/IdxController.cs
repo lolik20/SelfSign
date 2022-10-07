@@ -25,7 +25,7 @@ namespace SelfSign.Controllers
             urls = new Dictionary<IdxMethod, string>();
             urls.Add(IdxMethod.First, "https://api.id-x.org/idx/api2/parseAuto/multiple/passport");
             urls.Add(IdxMethod.Second, "https://api.id-x.org/idx/api2/parseAuto/multiple/passportRegistration");
-            urls.Add(IdxMethod.Inn, "https://api.id-x.org/idx/api2/getInn");
+            urls.Add(IdxMethod.Inn, "https://api.id-x.org/idx/api2/getInnex");
             urls.Add(IdxMethod.Snils, "https://api.id-x.org/idx/api2/parseAuto/multiple/snils");
 
         }
@@ -107,6 +107,10 @@ namespace SelfSign.Controllers
             }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
             var response = await PostData(request.file, keys, IdxMethod.Snils);
+            if (response == null)
+            {
+                return BadRequest();
+            }
             await AddDocument(request.file, request.Id, DocumentType.Snils);
 
             return Ok(response);
@@ -134,11 +138,15 @@ namespace SelfSign.Controllers
                 midName = user.Patronymic,
                 passportNumber = user.Serial + user.Number
             };
-            var response = await _httpClient.PostAsync(url, new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"));
+            var response = await _httpClient.PostAsync(url, new StringContent(JsonConvert.SerializeObject(idxRequest), Encoding.UTF8, "application/json"));
             var responseString = await response.Content.ReadAsStringAsync();
             var requestString = await response.RequestMessage.Content.ReadAsStringAsync();
             dynamic obj = JsonConvert.DeserializeObject(responseString);
-            return Ok(obj);
+            if (obj.resultCode == 0)
+            {
+                return Ok(obj.inn);
+            }
+            return BadRequest();
 
         }
 

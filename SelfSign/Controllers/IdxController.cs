@@ -70,13 +70,13 @@ namespace SelfSign.Controllers
                 return NotFound();
             }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
-            var response = await PostData(request.file, keys, IdxMethod.First);
-            if (response == null)
-            {
-                return BadRequest();
-            }
+            //var response = await PostData(request.file, keys, IdxMethod.First);
+            //if (response == null)
+            //{
+            //    return BadRequest();
+            //}
             await AddDocument(request.file, request.Id, DocumentType.Passport);
-            return Ok(response);
+            return Ok(null);
         }
 
         [HttpPost("second")]
@@ -88,14 +88,14 @@ namespace SelfSign.Controllers
                 return NotFound();
             }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
-            var response = await PostData(request.file, keys, IdxMethod.Second);
-            if(response == null)
-            {
-                return BadRequest();
-            }
+            //var response = await PostData(request.file, keys, IdxMethod.Second);
+            //if(response == null)
+            //{
+            //    return BadRequest();
+            //}
             await AddDocument(request.file, request.Id, DocumentType.Passport);
 
-            return Ok(response);
+            return Ok(null);
         }
         [HttpPost("snils")]
         public async Task<IActionResult> Snils([FromForm] PassportRequest request)
@@ -165,7 +165,6 @@ namespace SelfSign.Controllers
             }
             string url = urls.First(x => x.Key == method).Value;
             var response = await _httpClient.PostAsync(url, form);
-            //var response = await _httpClient.GetAsync("http://json-parser.com/974fc557/1.json");
             var responseString = await response.Content.ReadAsStringAsync();
             
             dynamic obj = JsonConvert.DeserializeObject(responseString);
@@ -201,25 +200,11 @@ namespace SelfSign.Controllers
         public Guid Id { get; set; }
         public IFormFile? file { get; set; }
     }
-    public class InnIdxRequest
-    {
-        public string lastName { get; set; }
-        public string firstName { get; set; }
-        public string midName { get; set; }
-        public string birthDate { get; set; }
-        public string passportNumber { get; set; }
-        public string passportDate { get; set; }
-        public string accessKey { get; set; }
-        public string secretKey { get; set; }
-    }
+  
     public class InnRequest
     {
         public Guid Id { get; set; }
 
-    }
-    public class IdxPassportResponse
-    {
-        
     }
     public 
 

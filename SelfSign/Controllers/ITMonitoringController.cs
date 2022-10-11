@@ -96,7 +96,7 @@ namespace SelfSign.Controllers
                     Gender = user.Gender,
                     CitizenshipCode = 643
                 },
-                TariffId = "8d9ea681-3cdb-4aa5-9ba6-7cb91f5e120a"
+                TariffId = "deac4065-0433-497d-80b8-34784f261261"
             };
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Request).Value;
             var response = await _httpClient.PostAsync(url, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
@@ -111,12 +111,13 @@ namespace SelfSign.Controllers
                 return Ok(result);
             }
             var errors = new List<string>();
-            foreach(var error in result.errors)
+            foreach (var error in result.errors)
             {
                 errors.Add(error.Path);
             }
             return BadRequest(errors);
         }
+
         [HttpGet("twofactor")]
         public async Task<IActionResult> TwoFactor([FromQuery] Guid id, string alias)
         {
@@ -139,11 +140,22 @@ namespace SelfSign.Controllers
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-              await  Documents(user);
                 return Ok(result);
 
             }
             return BadRequest(result);
+        }
+        [HttpGet("documents")]
+        public async Task<IActionResult> SendDocuments([FromQuery] Guid id)
+        {
+            var user = _context.Users.FirstOrDefault(x => x.Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var documents = await Documents(user);
+            var result = await Confirm(user);
+            return Ok(result);
         }
         private async Task<dynamic> Confirm(User user)
         {
@@ -176,13 +188,13 @@ namespace SelfSign.Controllers
             {
                 if (document.DocTypeCode == 6)
                 {
-                   bool isSended= await SendDocument(6, requestId);
+                    bool isSended = await SendDocument(6, requestId);
 
                 }
             }
             return result;
         }
-        private async Task<bool> SendDocument(int docTypeCode,Guid requestId)
+        private async Task<bool> SendDocument(int docTypeCode, Guid requestId)
         {
             var document = _context.Documents.FirstOrDefault(x => x.DocumentType == (DocumentType)docTypeCode);
             if (document == null)
@@ -191,23 +203,26 @@ namespace SelfSign.Controllers
             }
             var form = new MultipartFormDataContent();
             var fileBytes = FileService.GetDocument(document.FileUrl);
-            form.Add(new ByteArrayContent(fileBytes), "file", "file.jpg");
+            var file = new ByteArrayContent(fileBytes);
+            file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+            form.Add(file, "file", "file.jpg");
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.File).Value;
             var response = await _httpClient.PostAsync(url.Replace("$docTypeCode", docTypeCode.ToString()).Replace("$requestId", requestId.ToString()), form);
             var responseString = await response.Content.ReadAsStringAsync();
+            var requestString = await response.RequestMessage.Content.ReadAsStringAsync();
             return true;
         }
-        [HttpGet("documents")]
-        public async Task<IActionResult> GetDocuments(Guid id)
-        {
-            var user = _context.Users.FirstOrDefault(x => x.Id == id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            var result = await Documents(user);
-            return result;
-        }
+        //[HttpGet("documents")]
+        //public async Task<IActionResult> GetDocuments(Guid id)
+        //{
+        //    var user = _context.Users.FirstOrDefault(x => x.Id == id);
+        //    if (user == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    var result = await Documents(user);
+        //    return result;
+        //}
 
     }
     public enum ITMonitoringMethods
@@ -217,7 +232,7 @@ namespace SelfSign.Controllers
         TwoFactor = 2,
         Confirmation = 3,
         Documents = 4,
-        File=5
+        File = 5
     }
 
 }

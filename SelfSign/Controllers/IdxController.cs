@@ -76,7 +76,7 @@ namespace SelfSign.Controllers
             //    return BadRequest();
             //}
             await AddDocument(request.file, request.Id, DocumentType.Passport);
-            return Ok(null);
+            return Ok();
         }
 
         [HttpPost("second")]
@@ -95,7 +95,7 @@ namespace SelfSign.Controllers
             //}
             await AddDocument(request.file, request.Id, DocumentType.Passport);
 
-            return Ok(null);
+            return Ok();
         }
         [HttpPost("snils")]
         public async Task<IActionResult> Snils([FromForm] PassportRequest request)

@@ -70,11 +70,11 @@ namespace SelfSign.Controllers
                 return NotFound();
             }
             var keys = _configuration.GetSection("Idx").AsEnumerable();
-            //var response = await PostData(request.file, keys, IdxMethod.First);
-            //if (response == null)
-            //{
-            //    return BadRequest();
-            //}
+            var response = await PostData(request.file, keys, IdxMethod.First);
+            if (response == null)
+            {
+                return BadRequest();
+            }
             await AddDocument(request.file, request.Id, DocumentType.Passport);
             return Ok();
         }

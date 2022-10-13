@@ -151,10 +151,15 @@ namespace SelfSign.Controllers
         [HttpGet("documents/upload")]
         public async Task<IActionResult> SendDocuments([FromQuery] Guid id)
         {
-            var user = _context.Users.FirstOrDefault(x => x.Id == id);
+            var user = _context.Users.Include(x=>x.Documents).FirstOrDefault(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
+            }
+            var document = user.Documents.Where(x => x.DocumentType == DocumentType.Passport).FirstOrDefault();
+            if (document != null)
+            {
+                return Ok();
             }
             var documents = await Documents(user);
             var result = await Confirm(user);

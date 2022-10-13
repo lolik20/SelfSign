@@ -156,11 +156,7 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
-            var document = user.Documents.Where(x => x.DocumentType == DocumentType.Passport).FirstOrDefault();
-            if (document != null)
-            {
-                return Ok();
-            }
+            //сделать проверку на загруженный паспорт в mydss
             var documents = await Documents(user);
             var result = await Confirm(user);
             return Ok(result);

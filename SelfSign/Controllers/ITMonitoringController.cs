@@ -197,17 +197,22 @@ namespace SelfSign.Controllers
                 return Ok();
             }
             var url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.GetRequest).Value;
-            var response = await _httpClient.GetByteArrayAsync(url.Replace("$requestId", user.MyDssRequestId.ToString()));
-            var newFile = _context.Documents.Add(new Document
+            var response = await _httpClient.GetAsync(url.Replace("$requestId", user.MyDssRequestId.ToString()));
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                DocumentType = DocumentType.Statement,
-                UserId = user.Id
-            }) ;
-            var fileUrl =await FileService.AddFile(response, user.Id, newFile.Entity.Id);
-            newFile.Entity.FileUrl = fileUrl;
-            _context.SaveChanges();
-            return Ok();
-        }
+                var newFile = _context.Documents.Add(new Document
+                {
+                    DocumentType = DocumentType.Statement,
+                    UserId = user.Id
+                });
+                var fileUrl = await FileService.AddFile(await response.Content.ReadAsByteArrayAsync(), user.Id, newFile.Entity.Id);
+                newFile.Entity.FileUrl = fileUrl;
+                _context.SaveChanges();
+                return Ok();
+            }
+            return BadRequest(await response.Content.ReadAsStringAsync());
+         }
         private async Task<dynamic> Documents(User user)
         {
             await Authorize();
@@ -217,7 +222,7 @@ namespace SelfSign.Controllers
             dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
             foreach (var document in result)
             {
-                if (document.DocTypeCode == 6)
+                if (document.DocTypeCode == 6 && document.Files.Count==0)
                 {
                     bool isSended = await SendDocument(6, requestId);
 

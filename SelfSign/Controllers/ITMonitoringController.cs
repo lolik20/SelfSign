@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SelfSign.Entities;
 
@@ -25,6 +26,8 @@ namespace SelfSign.Controllers
             urls.Add(ITMonitoringMethods.Confirmation, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/send");
             urls.Add(ITMonitoringMethods.Documents, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/documents");
             urls.Add(ITMonitoringMethods.File, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/documents/$docTypeCode/files");
+            urls.Add(ITMonitoringMethods.GetRequest, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/documents/1/template");
+
 
         }
         private async Task Authorize()
@@ -111,7 +114,7 @@ namespace SelfSign.Controllers
                 return Ok(result);
             }
             var errors = new List<string>();
-            foreach (var error in result.errors)
+            foreach (var error in result?.errors)
             {
                 errors.Add(error.Path);
             }
@@ -145,7 +148,7 @@ namespace SelfSign.Controllers
             }
             return BadRequest(result);
         }
-        [HttpGet("documents")]
+        [HttpGet("documents/upload")]
         public async Task<IActionResult> SendDocuments([FromQuery] Guid id)
         {
             var user = _context.Users.FirstOrDefault(x => x.Id == id);
@@ -176,6 +179,33 @@ namespace SelfSign.Controllers
             }
             var result = await Confirm(user);
             return Ok(result);
+        }
+        [HttpGet("blank")]
+        public async Task<IActionResult> GetBlank(Guid id)
+        {
+            await Authorize();
+
+            var user = _context.Users.Include(x => x.Documents).FirstOrDefault(x => x.Id == id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var document = user.Documents.Where(x => x.DocumentType == DocumentType.Statement).FirstOrDefault();
+            if (document != null)
+            {
+                return BadRequest("документы получены");
+            }
+            var url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.GetRequest).Value;
+            var response = await _httpClient.GetByteArrayAsync(url.Replace("$requestId", user.MyDssRequestId.ToString()));
+            var newFile = _context.Documents.Add(new Document
+            {
+                DocumentType = DocumentType.Statement,
+                UserId = user.Id
+            }) ;
+            var fileUrl =await FileService.AddFile(response, user.Id, newFile.Entity.Id);
+            newFile.Entity.FileUrl = fileUrl;
+            _context.SaveChanges();
+            return Ok();
         }
         private async Task<dynamic> Documents(User user)
         {
@@ -212,17 +242,7 @@ namespace SelfSign.Controllers
             var requestString = await response.RequestMessage.Content.ReadAsStringAsync();
             return true;
         }
-        //[HttpGet("documents")]
-        //public async Task<IActionResult> GetDocuments(Guid id)
-        //{
-        //    var user = _context.Users.FirstOrDefault(x => x.Id == id);
-        //    if (user == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    var result = await Documents(user);
-        //    return result;
-        //}
+     
 
     }
     public enum ITMonitoringMethods
@@ -232,7 +252,8 @@ namespace SelfSign.Controllers
         TwoFactor = 2,
         Confirmation = 3,
         Documents = 4,
-        File = 5
+        File = 5,
+        GetRequest
     }
 
 }

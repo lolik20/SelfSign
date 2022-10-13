@@ -87,7 +87,7 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
-            var keys = _configuration.GetSection("Idx").AsEnumerable();
+            //var keys = _configuration.GetSection("Idx").AsEnumerable();
             //var response = await PostData(request.file, keys, IdxMethod.Second);
             //if(response == null)
             //{

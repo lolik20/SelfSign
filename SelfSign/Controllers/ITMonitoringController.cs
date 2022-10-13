@@ -186,7 +186,7 @@ namespace SelfSign.Controllers
             return Ok(result);
         }
         [HttpGet("blank")]
-        public async Task<IActionResult> GetBlank(Guid id)
+        public async Task<IActionResult> GetBlank([FromQuery]Guid id)
         {
             await Authorize();
 

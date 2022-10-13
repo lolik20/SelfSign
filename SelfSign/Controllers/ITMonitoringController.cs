@@ -193,7 +193,7 @@ namespace SelfSign.Controllers
             var document = user.Documents.Where(x => x.DocumentType == DocumentType.Statement).FirstOrDefault();
             if (document != null)
             {
-                return BadRequest("документы получены");
+                return Ok();
             }
             var url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.GetRequest).Value;
             var response = await _httpClient.GetByteArrayAsync(url.Replace("$requestId", user.MyDssRequestId.ToString()));

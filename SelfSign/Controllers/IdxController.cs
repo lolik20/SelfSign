@@ -76,7 +76,7 @@ namespace SelfSign.Controllers
                 return BadRequest();
             }
             await AddDocument(request.file, request.Id, DocumentType.Passport);
-            return Ok();
+            return Ok(response);
         }
 
         [HttpPost("second")]

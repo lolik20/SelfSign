@@ -1,4 +1,4 @@
-﻿namespace SelfSign.Entities
+﻿namespace SelfSign.Common.Entities
 {
     public class User
     {
@@ -25,6 +25,6 @@
         public List<Document> Documents { get; set; }
         public long RegionCode { get; set; }
         public SignatureType SignatureType { get; set; }
-        public Guid? MyDssRequestId { get; set; }
+        public List<Request> Requests { get; set; }
     }
 }

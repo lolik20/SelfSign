@@ -1,7 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SelfSign.Entities;
+﻿
 
-namespace SelfSign
+using Microsoft.EntityFrameworkCore;
+using SelfSign.Common.Entities;
+
+namespace SelfSign.DAL
 {
     public class ApplicationContext:DbContext
     {
@@ -12,6 +14,6 @@ namespace SelfSign
         }
         public DbSet<User> Users { get; set; }
         public DbSet<Document> Documents { get; set; }
-
+        public DbSet<Request> Requests { get; set; }
     }
 }

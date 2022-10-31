@@ -1,6 +1,9 @@
 
+using MediatR;
 using Microsoft.EntityFrameworkCore;
-using SelfSign;
+using SelfSign.BL.Queries;
+using SelfSign.DAL;
+using System.Reflection;
 
 namespace SelfSign
 {
@@ -16,6 +19,10 @@ namespace SelfSign
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
+            services.AddMediatR(typeof(Startup).GetTypeInfo().Assembly);
+            services.AddMediatR(typeof(IsRequestedQuery).GetTypeInfo().Assembly);
+
+
             services.AddDbContext<ApplicationContext>(x =>
 x.UseNpgsql(Configuration.GetConnectionString("Database")));
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SelfSign.Entities;
+using SelfSign.Common.Entities;
+using SelfSign.DAL;
 using System.Globalization;
 using System.Text.RegularExpressions;
 

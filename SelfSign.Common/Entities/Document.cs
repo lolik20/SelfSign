@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SelfSign.Entities
+namespace SelfSign.Common.Entities
 {
     public class Document
     {
@@ -10,5 +10,6 @@ namespace SelfSign.Entities
         public User User { get; set; }
         public DocumentType DocumentType { get; set; }
         public string FileUrl { get; set; }
+        public DateTime Created { get; set; }
     }
 }

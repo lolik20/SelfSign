@@ -2,33 +2,34 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using SelfSign;
+using SelfSign.DAL;
 
 #nullable disable
 
-namespace SelfSign.Migrations
+namespace SelfSign.DAL.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20221001193418_Initial")]
-    partial class Initial
+    partial class ApplicationContextModelSnapshot : ModelSnapshot
     {
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.9")
+                .HasAnnotation("ProductVersion", "6.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("SelfSign.Entities.Document", b =>
+            modelBuilder.Entity("SelfSign.Common.Entities.Document", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("DocumentType")
                         .HasColumnType("integer");
@@ -47,7 +48,33 @@ namespace SelfSign.Migrations
                     b.ToTable("Documents");
                 });
 
-            modelBuilder.Entity("SelfSign.Entities.User", b =>
+            modelBuilder.Entity("SelfSign.Common.Entities.Request", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RequestId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("VerificationCenter")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Requests");
+                });
+
+            modelBuilder.Entity("SelfSign.Common.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -77,9 +104,6 @@ namespace SelfSign.Migrations
 
                     b.Property<DateTime>("IssueDate")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("MyDssRequestId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -135,9 +159,9 @@ namespace SelfSign.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("SelfSign.Entities.Document", b =>
+            modelBuilder.Entity("SelfSign.Common.Entities.Document", b =>
                 {
-                    b.HasOne("SelfSign.Entities.User", "User")
+                    b.HasOne("SelfSign.Common.Entities.User", "User")
                         .WithMany("Documents")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -146,9 +170,22 @@ namespace SelfSign.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SelfSign.Entities.User", b =>
+            modelBuilder.Entity("SelfSign.Common.Entities.Request", b =>
+                {
+                    b.HasOne("SelfSign.Common.Entities.User", "User")
+                        .WithMany("Requests")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SelfSign.Common.Entities.User", b =>
                 {
                     b.Navigation("Documents");
+
+                    b.Navigation("Requests");
                 });
 #pragma warning restore 612, 618
         }

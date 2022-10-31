@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using SelfSign.Entities;
+using SelfSign.Common.Entities;
+using SelfSign.Common.RequestModels;
+using SelfSign.DAL;
 
 namespace SelfSign.Controllers
 {
@@ -13,10 +16,11 @@ namespace SelfSign.Controllers
         private readonly IConfiguration _configuration;
         private HttpClient _httpClient;
         private Dictionary<ITMonitoringMethods, string> urls;
-
-        public ITMonitoringController(ApplicationContext context, IConfiguration configuration)
+        private readonly IMediator _mediator;
+        public ITMonitoringController(ApplicationContext context, IConfiguration configuration, IMediator mediator)
         {
             _context = context;
+            _mediator = mediator;
             _configuration = configuration;
             _httpClient = new HttpClient();
             urls = new Dictionary<ITMonitoringMethods, string>();
@@ -63,6 +67,15 @@ namespace SelfSign.Controllers
             {
                 return NotFound();
             }
+            var isRequested = await _mediator.Send(new IsRequestedRequest
+            {
+                Id = id,
+                VerificationCenter = VerificationCenter.ItMonitoring
+            });
+            if (isRequested.IsRequested)
+            {
+                return BadRequest("Запрос уже есть");
+            }
             await Authorize();
 
             var request = new
@@ -108,8 +121,15 @@ namespace SelfSign.Controllers
             dynamic result = JsonConvert.DeserializeObject(responseString);
             if (response.StatusCode == System.Net.HttpStatusCode.Created)
             {
-                user.MyDssRequestId = Guid.Parse(result);
-
+                user.Requests = Guid.Parse(result);
+                var newRequest = new SelfSign.Common.Entities.Request
+                {
+                    Created = DateTime.Now.ToUniversalTime(),
+                    UserId = user.Id,
+                    RequestId=(string)result,
+                    VerificationCenter = VerificationCenter.ItMonitoring
+                };
+                _context.Requests.Add(newRequest);
                 _context.SaveChanges();
                 return Ok(result);
             }
@@ -124,7 +144,7 @@ namespace SelfSign.Controllers
         [HttpGet("twofactor")]
         public async Task<IActionResult> TwoFactor([FromQuery] Guid id, string alias)
         {
-            var user = _context.Users.FirstOrDefault(x => x.Id == id);
+            var user = _context.Users.Include(x=>x.Requests.OrderBy(x=>x.Created)).FirstOrDefault(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
@@ -136,9 +156,7 @@ namespace SelfSign.Controllers
                 Codeword = alias
             };
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.TwoFactor).Value;
-
-            Guid requestId = (Guid)user.MyDssRequestId;
-            var response = await _httpClient.PostAsync(url.Replace("$requestId", requestId.ToString()), new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
+            var response = await _httpClient.PostAsync(url.Replace("$requestId", user.Requests[0].RequestId), new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
             dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
 
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
@@ -151,54 +169,53 @@ namespace SelfSign.Controllers
         [HttpGet("documents/upload")]
         public async Task<IActionResult> SendDocuments([FromQuery] Guid id)
         {
-            var user = _context.Users.Include(x=>x.Documents).FirstOrDefault(x => x.Id == id);
+            var user = _context.Users.Include(x => x.Documents.OrderBy(x=>x.Created)).Include(x=>x.Requests.OrderBy(x=>x.Created)).FirstOrDefault(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
             }
             //сделать проверку на загруженный паспорт в mydss
-            var documents = await Documents(user);
-            var result = await Confirm(user);
+            var documents = await Documents(user.Requests[0].RequestId);
+            var result = await Confirm(user.Requests[0].RequestId);
             return Ok(result);
         }
-        private async Task<dynamic> Confirm(User user)
+        private async Task<dynamic> Confirm(string requestId)
         {
             await Authorize();
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Confirmation).Value;
-            Guid requestId = (Guid)user.MyDssRequestId;
-            var response = await _httpClient.PostAsync(url.Replace("$requestId", requestId.ToString()), null);
+            var response = await _httpClient.PostAsync(url.Replace("$requestId", requestId), null);
             dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
             return result;
         }
         [HttpGet("confirmation")]
         public async Task<IActionResult> Confirmation(Guid id)
         {
-            var user = _context.Users.FirstOrDefault(x => x.Id == id);
+            var user = _context.Users.Include(x=>x.Requests.OrderBy(x=>x.Created)).FirstOrDefault(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
             }
-            var result = await Confirm(user);
+            var result = await Confirm(user.Requests[0].RequestId);
             return Ok(result);
         }
         [HttpGet("blank")]
-        public async Task<IActionResult> GetBlank([FromQuery]Guid id)
+        public async Task<IActionResult> GetBlank([FromQuery] Guid id)
         {
             await Authorize();
 
-            var user = _context.Users.Include(x => x.Documents).FirstOrDefault(x => x.Id == id);
+            var user = _context.Users.Include(x => x.Documents.OrderBy(x=>x.Created)).Include(x=>x.Requests.OrderBy(x=>x.Created)).FirstOrDefault(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
             }
-            var document = user.Documents.Where(x => x.DocumentType == DocumentType.Statement).FirstOrDefault();
+            var document = user.Documents.OrderBy(x=>x.Created).Where(x => x.DocumentType == DocumentType.Statement).FirstOrDefault();
             if (document != null)
             {
                 return Ok();
             }
             var url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.GetRequest).Value;
-            var response = await _httpClient.GetAsync(url.Replace("$requestId", user.MyDssRequestId.ToString()));
-            
+            var response = await _httpClient.GetAsync(url.Replace("$requestId", user.Requests[0].RequestId));
+
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var newFile = _context.Documents.Add(new Document
@@ -212,27 +229,25 @@ namespace SelfSign.Controllers
                 return Ok();
             }
             return BadRequest(await response.Content.ReadAsStringAsync());
-         }
-        private async Task<dynamic> Documents(User user)
+        }
+        private async Task<dynamic> Documents(string requestId)
         {
             await Authorize();
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Documents).Value;
-            Guid requestId = (Guid)user.MyDssRequestId;
-            var response = await _httpClient.GetAsync(url.Replace("$requestId", requestId.ToString()));
+            var response = await _httpClient.GetAsync(url.Replace("$requestId", requestId));
             dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
             foreach (var document in result)
             {
-                if (document.DocTypeCode == 6 && document.Files.Count==0)
+                if (document.DocTypeCode == 6 && document.Files.Count == 0)
                 {
                     bool isSended = await SendDocument(6, requestId);
-
                 }
             }
             return result;
         }
-        private async Task<bool> SendDocument(int docTypeCode, Guid requestId)
+        private async Task<bool> SendDocument(int docTypeCode, string requestId)
         {
-            var document = _context.Documents.FirstOrDefault(x => x.DocumentType == (DocumentType)docTypeCode);
+            var document = _context.Documents.OrderBy(x=>x.Created).FirstOrDefault(x => x.DocumentType == (DocumentType)docTypeCode);
             if (document == null)
             {
                 return false;
@@ -243,12 +258,12 @@ namespace SelfSign.Controllers
             file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
             form.Add(file, "file", "file.jpg");
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.File).Value;
-            var response = await _httpClient.PostAsync(url.Replace("$docTypeCode", docTypeCode.ToString()).Replace("$requestId", requestId.ToString()), form);
+            var response = await _httpClient.PostAsync(url.Replace("$docTypeCode", docTypeCode.ToString()).Replace("$requestId", requestId), form);
             var responseString = await response.Content.ReadAsStringAsync();
             var requestString = await response.RequestMessage.Content.ReadAsStringAsync();
             return true;
         }
-     
+
 
     }
     public enum ITMonitoringMethods

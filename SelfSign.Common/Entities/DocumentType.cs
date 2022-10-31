@@ -1,4 +1,4 @@
-﻿namespace SelfSign.Entities
+﻿namespace SelfSign.Common.Entities
 {
     public enum DocumentType
     {

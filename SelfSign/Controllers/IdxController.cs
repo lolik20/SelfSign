@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using SelfSign.Entities;
+using SelfSign.Common.Entities;
+using SelfSign.DAL;
 using System.Text;
 
 namespace SelfSign.Controllers

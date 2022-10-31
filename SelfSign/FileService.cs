@@ -1,6 +1,6 @@
 ﻿using Renci.SshNet;
 using Renci.SshNet.Common;
-using SelfSign.Entities;
+using SelfSign.Common.Entities;
 
 namespace SelfSign
 {

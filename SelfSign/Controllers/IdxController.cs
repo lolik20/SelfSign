@@ -74,7 +74,7 @@ namespace SelfSign.Controllers
             var response = await PostData(request.file, keys, IdxMethod.First);
             if (response == null)
             {
-                return BadRequest();
+                return Ok(null);
             }
             await AddDocument(request.file, request.Id, DocumentType.Passport);
             return Ok(response);

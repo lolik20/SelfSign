@@ -5,7 +5,7 @@ using SelfSign.Common.Entities;
 
 namespace SelfSign.DAL
 {
-    public class ApplicationContext:DbContext
+    public class ApplicationContext : DbContext
     {
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
@@ -15,5 +15,6 @@ namespace SelfSign.DAL
         public DbSet<User> Users { get; set; }
         public DbSet<Document> Documents { get; set; }
         public DbSet<Request> Requests { get; set; }
+        public DbSet<Delivery> Deliveries { get; set; }
     }
 }

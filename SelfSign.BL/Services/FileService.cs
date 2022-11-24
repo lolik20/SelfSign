@@ -1,8 +1,9 @@
-﻿using Renci.SshNet;
+﻿using Microsoft.AspNetCore.Http;
+using Renci.SshNet;
 using Renci.SshNet.Common;
 using SelfSign.Common.Entities;
 
-namespace SelfSign
+namespace SelfSign.BL.Services
 {
     public static class FileService
     {

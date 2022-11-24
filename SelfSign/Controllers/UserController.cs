@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SelfSign.Common.Entities;
+using SelfSign.Common.RequestModels;
 using SelfSign.DAL;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -14,11 +16,13 @@ namespace SelfSign.Controllers
         private readonly ApplicationContext _context;
         private readonly IConfiguration _configuration;
         private readonly IConfigurationSection _regex;
-        public UserController(ApplicationContext context,IConfiguration configuration)
+        private readonly IMediator _mediator;
+        public UserController(ApplicationContext context,IConfiguration configuration,IMediator mediator)
         {
             _context = context;
             _configuration = configuration;
             _regex = _configuration.GetSection("regex");
+            _mediator = mediator;
         }
         [HttpGet]
         public async Task<IActionResult> GetUser([FromQuery] Guid id)
@@ -33,11 +37,11 @@ namespace SelfSign.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
-            var validPhone = Regex.Match(request.Phone, _regex.GetValue<string>("Phone"));
-            if (!validPhone.Success)
-            {
-                return BadRequest();
-            }
+            //var validPhone = Regex.Match(request.Phone, _regex.GetValue<string>("Phone"));
+            //if (!validPhone.Success)
+            //{
+            //    return BadRequest();
+            //}
             if (string.IsNullOrEmpty(request.Name))
             {
                 return BadRequest();
@@ -79,6 +83,7 @@ namespace SelfSign.Controllers
 
 
                 });
+                await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата http://31.184.240.87/{newEntity.Entity.Id}");
                 _context.SaveChanges();
                 return Ok(newEntity.Entity.Id);
             }
@@ -141,6 +146,17 @@ namespace SelfSign.Controllers
             _context.SaveChanges();
             return Ok(user);
         }
+        //[HttpPut("delivery")]
+        //public async Task <IActionResult> UpdateDelivery([FromForm] )
+        //{
+
+        //}
+        [HttpPost("delivery")]
+        public async Task<IActionResult> CreateDelivery([FromBody] CreateDeliveryRequest request)
+        {
+            var response = await _mediator.Send(request);
+            return Ok(response);
+        }
         [HttpPut("snils")]
         public async Task<IActionResult> Snils([FromBody] SnilsUpdateRequest request)
         {
@@ -158,7 +174,7 @@ namespace SelfSign.Controllers
             _context.SaveChanges();
             return Ok();
         }
-       
+            
         [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] CitizenUpdateRequest request)
         {
@@ -308,5 +324,5 @@ namespace SelfSign.Controllers
         public string Snils { get; set; }
     }
 
-
+   
 }

@@ -1,6 +1,7 @@
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SelfSign.BL.Commands;
 using SelfSign.BL.Queries;
 using SelfSign.DAL;
 using System.Reflection;
@@ -21,6 +22,8 @@ namespace SelfSign
             services.AddSwaggerGen();
             services.AddMediatR(typeof(Startup).GetTypeInfo().Assembly);
             services.AddMediatR(typeof(IsRequestedQuery).GetTypeInfo().Assembly);
+            services.AddMediatR(typeof(AddressQuery).GetTypeInfo().Assembly);
+            services.AddMediatR(typeof(CreateDeliveryCommand).GetTypeInfo().Assembly);
 
 
             services.AddDbContext<ApplicationContext>(x =>

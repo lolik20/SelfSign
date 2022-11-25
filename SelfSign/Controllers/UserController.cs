@@ -17,7 +17,7 @@ namespace SelfSign.Controllers
         private readonly IConfiguration _configuration;
         private readonly IConfigurationSection _regex;
         private readonly IMediator _mediator;
-        public UserController(ApplicationContext context,IConfiguration configuration,IMediator mediator)
+        public UserController(ApplicationContext context, IConfiguration configuration, IMediator mediator)
         {
             _context = context;
             _configuration = configuration;
@@ -146,16 +146,28 @@ namespace SelfSign.Controllers
             _context.SaveChanges();
             return Ok(user);
         }
-        //[HttpPut("delivery")]
-        //public async Task <IActionResult> UpdateDelivery([FromForm] )
-        //{
-
-        //}
-        [HttpPost("delivery")]
-        public async Task<IActionResult> CreateDelivery([FromBody] CreateDeliveryRequest request)
+        [HttpPut("delivery")]
+        public async Task<IActionResult> UpdateDelivery([FromForm] UpdateDeliveryRequest request)
         {
             var response = await _mediator.Send(request);
             return Ok(response);
+        }
+        [HttpPost("delivery")]
+        public async Task<IActionResult> CreateDelivery([FromBody] CreateDeliveryRequest request)
+        {
+            try
+            {
+                var response = await _mediator.Send(request);
+                if (!response.IsSuccess)
+                {
+                    return BadRequest();
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
         [HttpPut("snils")]
         public async Task<IActionResult> Snils([FromBody] SnilsUpdateRequest request)
@@ -174,7 +186,7 @@ namespace SelfSign.Controllers
             _context.SaveChanges();
             return Ok();
         }
-            
+
         [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] CitizenUpdateRequest request)
         {
@@ -188,12 +200,12 @@ namespace SelfSign.Controllers
             //    return BadRequest();
 
             //}
-            var date =new  DateTime();
-            if (request.IssueDate.Length!=10)
+            var date = new DateTime();
+            if (request.IssueDate.Length != 10)
             {
                 return BadRequest();
             }
-            if (request.BirthDate.Length!=10)
+            if (request.BirthDate.Length != 10)
             {
                 return BadRequest();
             }
@@ -211,7 +223,7 @@ namespace SelfSign.Controllers
             {
                 return BadRequest();
             }
-            
+
             if (string.IsNullOrEmpty(request.Patronymic))
             {
                 return BadRequest();
@@ -232,7 +244,7 @@ namespace SelfSign.Controllers
             {
                 return BadRequest();
             }
-            if (string.IsNullOrEmpty(request.SubDivisionCode)||request.SubDivisionCode=="0")
+            if (string.IsNullOrEmpty(request.SubDivisionCode) || request.SubDivisionCode == "0")
             {
                 return BadRequest();
             }
@@ -254,7 +266,6 @@ namespace SelfSign.Controllers
             user.SubDivisionCode = request.SubDivisionCode;
             user.BirthPlace = request.BirthPlace;
             user.Gender = gender;
-            user.RegionCode = request.RegionCode;
 
             user.Citizenship = "RU";
             if (!string.IsNullOrEmpty(request.Citizenship))
@@ -304,7 +315,7 @@ namespace SelfSign.Controllers
         public string BirthDate { get; set; }
         public string IssueDate { get; set; }
         public string SubDivisionCode { get; set; }
-        
+
         public string SubDivisionAddress { get; set; }
         public int Gender { get; set; }
         public long RegionCode { get; set; }
@@ -324,5 +335,5 @@ namespace SelfSign.Controllers
         public string Snils { get; set; }
     }
 
-   
+
 }

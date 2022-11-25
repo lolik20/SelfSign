@@ -12,7 +12,7 @@ namespace SelfSign.BL.Services
         private readonly static string username = "appuser";
         private readonly static string password = "luTZj3G7NkAF";
 
-        public static async Task<string> AddFile(IFormFile file, Guid userId,Guid fileId)
+        public static async Task<string> AddFile(IFormFile file, Guid userId,Guid fileId,string type)
         {
 
             string filesDirectory = $"/home/appuser/documents/{userId}";
@@ -33,7 +33,7 @@ namespace SelfSign.BL.Services
                 if (file.Length > 0)
                 {
 
-                    filePath = $"{filesDirectory}/{fileId.ToString().Replace("-","")}.jpg";
+                    filePath = $"{filesDirectory}/{fileId.ToString().Replace("-","")}.{type}";
                     var fileBytes = FromFile(file);
                     var stream = new MemoryStream();
                     stream.Write(fileBytes, 0, fileBytes.Length);
@@ -44,7 +44,7 @@ namespace SelfSign.BL.Services
 
             }
         }
-        public static async Task<string> AddFile(byte[] file, Guid userId, Guid fileId)
+        public static async Task<string> AddFile(byte[] file, Guid userId, Guid fileId,string type)
         {
 
             string filesDirectory = $"/home/appuser/documents/{userId}";
@@ -65,7 +65,7 @@ namespace SelfSign.BL.Services
                 if (file.Length > 0)
                 {
 
-                    filePath = $"{filesDirectory}/{fileId.ToString().Replace("-", "")}.pdf";
+                    filePath = $"{filesDirectory}/{fileId.ToString().Replace("-", "")}.{type}";
                     var stream = new MemoryStream();
                     stream.Write(file, 0, file.Length);
                     stream.Position = 0;
@@ -90,7 +90,7 @@ namespace SelfSign.BL.Services
             }
             return null;
         }
-        private static byte[] FromFile(IFormFile formFile)
+        public static byte[] FromFile(IFormFile formFile)
         {
             long length = formFile.Length;
             if (length < 0)

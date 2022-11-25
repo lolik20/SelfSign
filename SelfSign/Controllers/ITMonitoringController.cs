@@ -91,7 +91,6 @@ namespace SelfSign.Controllers
                 {
                     City = user.BirthPlace,
                     Value = user.RegAddress,
-                    RegionCode = user.RegionCode
                 },
                 Owner = new
                 {
@@ -127,7 +126,7 @@ namespace SelfSign.Controllers
                 {
                     Created = DateTime.Now.ToUniversalTime(),
                     UserId = user.Id,
-                    RequestId=(string)result,
+                    RequestId = (string)result,
                     VerificationCenter = VerificationCenter.ItMonitoring
                 };
                 _context.Requests.Add(newRequest);
@@ -145,7 +144,7 @@ namespace SelfSign.Controllers
         [HttpGet("twofactor")]
         public async Task<IActionResult> TwoFactor([FromQuery] Guid id, string alias)
         {
-            var user = _context.Users.Include(x=>x.Requests.OrderBy(x=>x.Created)).FirstOrDefault(x => x.Id == id);
+            var user = _context.Users.Include(x => x.Requests.OrderBy(x => x.Created)).FirstOrDefault(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
@@ -170,14 +169,13 @@ namespace SelfSign.Controllers
         [HttpGet("documents/upload")]
         public async Task<IActionResult> SendDocuments([FromQuery] Guid id)
         {
-            var user = _context.Users.Include(x => x.Documents.OrderBy(x=>x.Created)).Include(x=>x.Requests.OrderBy(x=>x.Created)).FirstOrDefault(x => x.Id == id);
+            var user = _context.Users.FirstOrDefault(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
             }
-            //сделать проверку на загруженный паспорт в mydss
-            var documents = await Documents(user.Requests[0].RequestId);
-            var result = await Confirm(user.Requests[0].RequestId);
+            var documents = await Documents(user.Requests.OrderBy(x => x.Created).First().RequestId);
+            var result = await Confirm(user.Requests.OrderBy(x => x.Created).First().RequestId);
             return Ok(result);
         }
         private async Task<dynamic> Confirm(string requestId)
@@ -191,12 +189,12 @@ namespace SelfSign.Controllers
         [HttpGet("confirmation")]
         public async Task<IActionResult> Confirmation(Guid id)
         {
-            var user = _context.Users.Include(x=>x.Requests.OrderBy(x=>x.Created)).FirstOrDefault(x => x.Id == id);
+            var user = _context.Users.Include(x => x.Requests.OrderBy(x => x.Created)).FirstOrDefault(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
             }
-            var result = await Confirm(user.Requests[0].RequestId);
+            var result = await Confirm(user.Requests.OrderBy(x => x.Created).First().RequestId);
             return Ok(result);
         }
         [HttpGet("blank")]
@@ -204,12 +202,13 @@ namespace SelfSign.Controllers
         {
             await Authorize();
 
-            var user = _context.Users.Include(x => x.Documents.OrderBy(x=>x.Created)).Include(x=>x.Requests.OrderBy(x=>x.Created)).FirstOrDefault(x => x.Id == id);
+            var user = _context.Users.FirstOrDefault(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
             }
-            var document = user.Documents.OrderBy(x=>x.Created).Where(x => x.DocumentType == DocumentType.Statement).FirstOrDefault();
+            var requestEntity = _context.Requests.OrderBy(x => x.Created).First(x => x.UserId == id);
+            var document = requestEntity.Documents.OrderBy(x => x.Created).Where(x => x.DocumentType == DocumentType.Statement).FirstOrDefault();
             if (document != null)
             {
                 return Ok();
@@ -222,9 +221,9 @@ namespace SelfSign.Controllers
                 var newFile = _context.Documents.Add(new Document
                 {
                     DocumentType = DocumentType.Statement,
-                    UserId = user.Id
+                    RequestId = requestEntity.Id
                 });
-                var fileUrl = await FileService.AddFile(await response.Content.ReadAsByteArrayAsync(), user.Id, newFile.Entity.Id);
+                var fileUrl = await FileService.AddFile(await response.Content.ReadAsByteArrayAsync(), user.Id, newFile.Entity.Id,"pdf");
                 newFile.Entity.FileUrl = fileUrl;
                 _context.SaveChanges();
                 return Ok();
@@ -248,7 +247,7 @@ namespace SelfSign.Controllers
         }
         private async Task<bool> SendDocument(int docTypeCode, string requestId)
         {
-            var document = _context.Documents.OrderBy(x=>x.Created).FirstOrDefault(x => x.DocumentType == (DocumentType)docTypeCode);
+            var document = _context.Documents.OrderBy(x => x.Created).FirstOrDefault(x => x.DocumentType == (DocumentType)docTypeCode);
             if (document == null)
             {
                 return false;

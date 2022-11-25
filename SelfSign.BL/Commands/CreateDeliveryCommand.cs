@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using SelfSign.BL.Services;
 using SelfSign.Common.RequestModels;
 using SelfSign.Common.ResponseModels;
@@ -30,7 +31,7 @@ namespace SelfSign.BL.Commands
 
         public async Task<CreateDeliveryResponse> Handle(CreateDeliveryRequest request, CancellationToken cancellationToken)
         {
-            var user = _context.Users.Include(x => x.Requests).Include(x => x.Documents).FirstOrDefault(x => x.Id == request.UserId);
+            var user = _context.Users.Include(x => x.Requests).ThenInclude(x => x.Documents).FirstOrDefault(x => x.Id == request.UserId);
             if (user == null)
             {
                 return new CreateDeliveryResponse
@@ -47,13 +48,20 @@ namespace SelfSign.BL.Commands
                     IsSuccess = false
                 };
             }
+            bool isValidCladr = IsValidCladr(request.Kladr.ToString());
+            if (!isValidCladr)
+            {
+                return new CreateDeliveryResponse { IsSuccess = false };
+            }
+            var requestEntity = user.Requests.OrderBy(x => x.Created).First();
             var newDeliveryEntity = _context.Deliveries.Add(new Common.Entities.Delivery
             {
                 Cladr = request.Kladr,
                 DeliveryDate = date.ToUniversalTime(),
                 Created = DateTime.UtcNow,
-                RequestId = user.Requests.OrderBy(x => x.Created).First().Id,
-                Time = request.Time
+                RequestId = requestEntity.Id,
+                Time = request.Time,
+                VerificationCenter = requestEntity.VerificationCenter
             });
             var formData = new MultipartFormDataContent();
             formData.Add(new StringContent(request.Address), "address");
@@ -62,8 +70,9 @@ namespace SelfSign.BL.Commands
             formData.Add(new StringContent(newDeliveryEntity.Entity.RequestId.ToString()), "id");
             formData.Add(new StringContent(request.DeliveryDate), "date");
             formData.Add(new StringContent(request.Time), "time");
+            formData.Add(new StringContent($"{user.Surname} {user.Name} {user.Patronymic}"), "fio");
 
-            var fileBytes = FileService.GetDocument(user.Documents.Where(x => x.DocumentType == Common.Entities.DocumentType.Statement).OrderBy(x => x.Created).First().FileUrl);
+            var fileBytes = FileService.GetDocument(requestEntity.Documents.First(x => x.DocumentType == Common.Entities.DocumentType.Statement).FileUrl);
             var file = new ByteArrayContent(fileBytes);
             file.Headers.ContentType = _pdfMimeType;
             formData.Add(file, "file", "file.pdf");
@@ -84,5 +93,21 @@ namespace SelfSign.BL.Commands
                 IsSuccess = true
             };
         }
+        public bool IsValidCladr(string cladr)
+        {
+            using (StreamReader stream = new StreamReader("cladr.json"))
+            {
+                string json = stream.ReadToEnd();
+                List<JsonItem> items = JsonConvert.DeserializeObject<List<JsonItem>>(json);
+                if (!items.Select(x => x.field_1).Contains(cladr))
+                    return false;
+            }
+            return true;
+        }
+        private class JsonItem
+        {
+            public string field_1 { get; set; }
+        }
     }
+
 }

@@ -11,5 +11,6 @@ namespace SelfSign.Common.Entities
         public Guid UserId { get; set; }
         public string RequestId { get; set; }
         public User User { get; set; }
+        public List<Document> Documents { get; set; }
     }
 }

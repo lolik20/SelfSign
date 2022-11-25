@@ -15,12 +15,14 @@ namespace SelfSign.Controllers
         private readonly IConfiguration _configuration;
         private readonly string Key;
         private readonly HttpClient _httpClient;
-        public SignmeController(ApplicationContext context, IConfiguration configuration)
+        private readonly IMediator _mediator;
+        public SignmeController(ApplicationContext context, IConfiguration configuration,IMediator mediator)
         {
             _context = context;
             _configuration = configuration;
             Key = _configuration.GetSection("SignMe").GetValue<string>("Key");
             _httpClient = new HttpClient();
+            _mediator = mediator;
         }
         [HttpGet("check")]
         public async Task<IActionResult> Check(Guid id)
@@ -62,7 +64,7 @@ namespace SelfSign.Controllers
             {
                 return BadRequest("Запрос уже есть");
             }
-
+            var cladr = await _mediator.Send(new AddressRequest { query = user.RegAddress });
             var requestData = new Request
             {
                 bdate = user.BirthDate.ToString("yyyy-MM-dd"),
@@ -81,7 +83,7 @@ namespace SelfSign.Controllers
                 pn = user.Number,
                 ps = user.Serial,
                 surname = user.Surname,
-                region = user.RegionCode.ToString(),
+                region = cladr.First().ShortKladr.ToString(),
                 regtype = "1",
                 gender = user.Gender == Gender.Мужской ? "M" : "F"
             };

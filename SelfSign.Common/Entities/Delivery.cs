@@ -13,9 +13,10 @@ namespace SelfSign.Common.Entities
         public DateTime Created { get; set; }
         public DateTime DeliveryDate { get; set; }
         public string Time { get; set; }
-        public long Cladr { get; set; }
+        public string Cladr { get; set; }
         [ForeignKey("Request")]
         public Guid RequestId { get; set; }
         public Request Request { get; set; }
+        public VerificationCenter VerificationCenter { get; set; }
     }
 }

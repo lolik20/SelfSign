@@ -12,7 +12,7 @@ namespace SelfSign.Common.RequestModels
     {
         public Guid UserId { get; set; }
         public string DeliveryDate { get; set; }
-        public long Kladr { get; set; }
+        public string Kladr { get; set; }
         public string Address { get; set; }
         public string Time { get; set; }
         public string PhoneNumber { get; set; }

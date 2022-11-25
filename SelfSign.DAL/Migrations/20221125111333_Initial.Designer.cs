@@ -12,8 +12,8 @@ using SelfSign.DAL;
 namespace SelfSign.DAL.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20221124184537_Deliveries")]
-    partial class Deliveries
+    [Migration("20221125111333_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -46,6 +46,9 @@ namespace SelfSign.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("VerificationCenter")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("RequestId");
@@ -69,12 +72,12 @@ namespace SelfSign.DAL.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
+                    b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("RequestId");
 
                     b.ToTable("Documents");
                 });
@@ -159,9 +162,6 @@ namespace SelfSign.DAL.Migrations
                     b.Property<DateTime>("RegDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("RegionCode")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Serial")
                         .IsRequired()
                         .HasColumnType("text");
@@ -203,13 +203,13 @@ namespace SelfSign.DAL.Migrations
 
             modelBuilder.Entity("SelfSign.Common.Entities.Document", b =>
                 {
-                    b.HasOne("SelfSign.Common.Entities.User", "User")
+                    b.HasOne("SelfSign.Common.Entities.Request", "Request")
                         .WithMany("Documents")
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("Request");
                 });
 
             modelBuilder.Entity("SelfSign.Common.Entities.Request", b =>
@@ -223,10 +223,13 @@ namespace SelfSign.DAL.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SelfSign.Common.Entities.User", b =>
+            modelBuilder.Entity("SelfSign.Common.Entities.Request", b =>
                 {
                     b.Navigation("Documents");
+                });
 
+            modelBuilder.Entity("SelfSign.Common.Entities.User", b =>
+                {
                     b.Navigation("Requests");
                 });
 #pragma warning restore 612, 618

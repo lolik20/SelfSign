@@ -33,13 +33,10 @@ namespace SelfSign.Controllers
             urls.Add(ITMonitoringMethods.File, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/documents/$docTypeCode/files");
             urls.Add(ITMonitoringMethods.GetRequest, "https://api-test.digitaldeal.pro/ds/v1/requests/$requestId/documents/1/template");
 
-
         }
         private async Task Authorize()
         {
-            var authToken = _httpClient.DefaultRequestHeaders.FirstOrDefault(x => x.Key == "Authorization");
-            if (authToken.Value == null)
-            {
+          
 
                 var credentials = _configuration.GetSection("ItMonitoring");
                 var request = new
@@ -55,8 +52,8 @@ namespace SelfSign.Controllers
                     "application/json"));
                 var requestStrin = await response.RequestMessage.Content.ReadAsStringAsync();
                 var responseString = await response.Content.ReadAsStringAsync();
-                _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {responseString}");
-            }
+                _httpClient.DefaultRequestHeaders.Authorization=new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", responseString);
+            
 
         }
         [HttpGet("request")]
@@ -77,7 +74,6 @@ namespace SelfSign.Controllers
             {
                 return BadRequest("Запрос уже есть");
             }
-            await Authorize();
 
             var request = new
             {
@@ -115,8 +111,13 @@ namespace SelfSign.Controllers
                 TariffId = "deac4065-0433-497d-80b8-34784f261261"
             };
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Request).Value;
+            start:
             var response = await _httpClient.PostAsync(url, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
-
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await Authorize();
+                goto start;
+            }
             var responseString = await response.Content.ReadAsStringAsync();
             dynamic result = JsonConvert.DeserializeObject(responseString);
             if (response.StatusCode == System.Net.HttpStatusCode.Created)
@@ -156,9 +157,14 @@ namespace SelfSign.Controllers
                 Codeword = alias
             };
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.TwoFactor).Value;
+            start:
             var response = await _httpClient.PostAsync(url.Replace("$requestId", user.Requests[0].RequestId), new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await Authorize();
+                goto start;
+            }
             dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
-
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return Ok(result);

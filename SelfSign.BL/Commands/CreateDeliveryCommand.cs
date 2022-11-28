@@ -21,9 +21,9 @@ namespace SelfSign.BL.Commands
         private readonly ApplicationContext _context;
         private readonly IConfiguration _configuration;
         private readonly System.Net.Http.Headers.MediaTypeHeaderValue _pdfMimeType;
-        public CreateDeliveryCommand(ApplicationContext context, IConfiguration configuration)
+        public CreateDeliveryCommand(ApplicationContext context, IConfiguration configuration,HttpClient httpClient)
         {
-            _httpClient = new HttpClient();
+            _httpClient = httpClient;
             _context = context;
             _configuration = configuration;
             _pdfMimeType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");

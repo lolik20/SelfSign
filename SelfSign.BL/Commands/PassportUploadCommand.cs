@@ -19,11 +19,11 @@ namespace SelfSign.BL.Commands
         private readonly ApplicationContext _context;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
-        public PassportUploadCommand(ApplicationContext context, IConfiguration configuration)
+        public PassportUploadCommand(ApplicationContext context, IConfiguration configuration,HttpClient httpClient)
         {
             _context = context;
             _configuration = configuration;
-            _httpClient = new HttpClient();
+            _httpClient = httpClient;
         }
 
         public async Task<PassportUploadResponse> Handle(PassportUploadRequest request, CancellationToken cancellationToken)

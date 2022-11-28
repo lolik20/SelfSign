@@ -20,11 +20,11 @@ namespace SelfSign.BL.Commands
         private readonly ApplicationContext _context;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
-        public SnilsUploadCommand(ApplicationContext context, IConfiguration configuration)
+        public SnilsUploadCommand(ApplicationContext context, IConfiguration configuration,HttpClient httpClient)
         {
             _context = context;
             _configuration = configuration;
-            _httpClient = new HttpClient();
+            _httpClient = httpClient;
         }
 
         public async Task<SnilsUploadResponse> Handle(SnilsUploadRequest request, CancellationToken cancellationToken)

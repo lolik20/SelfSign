@@ -15,18 +15,14 @@ namespace SelfSign.BL.Queries
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
-        public IssuedByQuery(IConfiguration configuration)
+        public IssuedByQuery(IConfiguration configuration,IHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
-            _httpClient = new HttpClient();
+            _httpClient = httpClientFactory.CreateClient("Dadata");
         }
         public async Task<List<IssuedByResponse>> Handle(IssuedByRequest request, CancellationToken cancellationToken)
         {
-
             var dadataSection = _configuration.GetSection("Dadata");
-            _httpClient.DefaultRequestHeaders.Add("X-Secret", dadataSection["Secret"]);
-
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Token {dadataSection["Api"]}");
             var url = dadataSection["Urls:Address"];
             var response = await _httpClient.PostAsync($"{dadataSection["Urls:Issued"]}", new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"));
             var responseString = await response.Content.ReadAsStringAsync();

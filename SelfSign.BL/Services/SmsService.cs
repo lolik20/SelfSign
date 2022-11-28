@@ -1,8 +1,8 @@
-﻿namespace SelfSign
+﻿namespace SelfSign.BL.Services
 {
     public static class SmsService
     {
-        private static readonly HttpClient _httpClient=new HttpClient();
+        private static readonly HttpClient _httpClient = new HttpClient();
         private static string _login = "Selfsign";
         private static string _password = "self456";
 

@@ -6,6 +6,7 @@ using SelfSign.Common.ResponseModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,18 +16,15 @@ namespace SelfSign.BL.Queries
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
-        public AddressQuery(IConfiguration configuration)
+        public AddressQuery(IConfiguration configuration,IHttpClientFactory httpClientFactory)
         {
             _configuration = configuration;
-            _httpClient = new HttpClient();
+            _httpClient = httpClientFactory.CreateClient("Dadata");
         }
         public async Task<List<AddressResponse>> Handle(AddressRequest request, CancellationToken cancellationToken)
         {
-            
             var dadataSection = _configuration.GetSection("Dadata");
-            _httpClient.DefaultRequestHeaders.Add("X-Secret",dadataSection["Secret"]);
-
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Token {dadataSection["Api"]}");
+      
             var url = dadataSection["Urls:Address"];
             var response = await _httpClient.PostAsync($"{dadataSection["Urls:Address"]}", new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"));
             var responseString = await response.Content.ReadAsStringAsync();

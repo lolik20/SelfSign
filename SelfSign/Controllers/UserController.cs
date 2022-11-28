@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SelfSign.BL.Services;
 using SelfSign.Common.Entities;
 using SelfSign.Common.RequestModels;
 using SelfSign.DAL;
@@ -149,8 +150,15 @@ namespace SelfSign.Controllers
         [HttpPut("delivery")]
         public async Task<IActionResult> UpdateDelivery([FromForm] UpdateDeliveryRequest request)
         {
-            var response = await _mediator.Send(request);
-            return Ok(response);
+            try
+            {
+                var response = await _mediator.Send(request);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
         }
         [HttpPost("delivery")]
         public async Task<IActionResult> CreateDelivery([FromBody] CreateDeliveryRequest request)

@@ -53,124 +53,30 @@ namespace SelfSign.Controllers
                 var requestStrin = await response.RequestMessage.Content.ReadAsStringAsync();
                 var responseString = await response.Content.ReadAsStringAsync();
                 _httpClient.DefaultRequestHeaders.Authorization=new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", responseString);
-            
-
+            _httpClient.Timeout = TimeSpan.FromSeconds(4);
         }
+        
         [HttpGet("request")]
-        public async Task<IActionResult> Request([FromQuery] Guid id)
+        public async Task<IActionResult> Request([FromQuery] CreateItMonitoringRequest request)
         {
-
-            var user = _context.Users.FirstOrDefault(x => x.Id == id);
-            if (user == null)
+            var response = await _mediator.Send(request);
+            if (!response.IsSuccessful)
             {
-                return NotFound();
+                return BadRequest(response.Message);
             }
-            var isRequested = await _mediator.Send(new IsRequestedRequest
-            {
-                Id = id,
-                VerificationCenter = VerificationCenter.ItMonitoring
-            });
-            if (isRequested.IsRequested)
-            {
-                return BadRequest("Запрос уже есть");
-            }
-
-            var request = new
-            {
-                OwnerType = 1,
-                Contacts = new
-                {
-                    Email = user.Email,
-                    Phone = user.Phone,
-                },
-                Address = new
-                {
-                    City = user.BirthPlace,
-                    Value = user.RegAddress,
-                },
-                Owner = new
-                {
-                    Inn = user.Inn,
-                    BirthDate = user.BirthDate.ToString("yyyy-MM-dd"),
-                    BirthPlace = user.BirthPlace,
-                    Snils = user.Snils,
-                    Passport = new
-                    {
-                        Series = user.Serial,
-                        Number = user.Number,
-                        IssueDate = user.RegDate.ToString("yyyy-MM-dd"),
-                        IssuingAuthorityCode = user.SubDivisionCode,
-                        IssuingAuthorityName = user.SubDivisionAddress
-                    },
-                    FirstName = user.Name,
-                    LastName = user.Surname,
-                    MiddleName = user.Patronymic,
-                    Gender = user.Gender,
-                    CitizenshipCode = 643
-                },
-                TariffId = "deac4065-0433-497d-80b8-34784f261261"
-            };
-            string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Request).Value;
-            start:
-            var response = await _httpClient.PostAsync(url, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                await Authorize();
-                goto start;
-            }
-            var responseString = await response.Content.ReadAsStringAsync();
-            dynamic result = JsonConvert.DeserializeObject(responseString);
-            if (response.StatusCode == System.Net.HttpStatusCode.Created)
-            {
-                user.Requests = Guid.Parse(result);
-                var newRequest = new SelfSign.Common.Entities.Request
-                {
-                    Created = DateTime.Now.ToUniversalTime(),
-                    UserId = user.Id,
-                    RequestId = (string)result,
-                    VerificationCenter = VerificationCenter.ItMonitoring
-                };
-                _context.Requests.Add(newRequest);
-                _context.SaveChanges();
-                return Ok(result);
-            }
-            var errors = new List<string>();
-            foreach (var error in result?.errors)
-            {
-                errors.Add(error.Path);
-            }
-            return BadRequest(errors);
+            return Ok(response.Message);
         }
 
         [HttpGet("twofactor")]
-        public async Task<IActionResult> TwoFactor([FromQuery] Guid id, string alias)
+        public async Task<IActionResult> TwoFactor([FromQuery] ItMonitoringTwoFactorRequest request)
         {
-            var user = _context.Users.Include(x => x.Requests.OrderBy(x => x.Created)).FirstOrDefault(x => x.Id == id);
-            if (user == null)
+            var response = await _mediator.Send(request);
+            if (!response.IsSuccessful)
             {
-                return NotFound();
+                return BadRequest();
             }
-            await Authorize();
-            var request = new
-            {
-                Dss2fa = 2,
-                Codeword = alias
-            };
-            string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.TwoFactor).Value;
-            start:
-            var response = await _httpClient.PostAsync(url.Replace("$requestId", user.Requests[0].RequestId), new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                await Authorize();
-                goto start;
-            }
-            dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                return Ok(result);
-
-            }
-            return BadRequest(result);
+            return Ok();
+            
         }
         [HttpGet("documents/upload")]
         public async Task<IActionResult> SendDocuments([FromQuery] Guid id)

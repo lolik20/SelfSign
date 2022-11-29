@@ -1,8 +1,11 @@
 
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using SelfSign.BL.Commands;
+using SelfSign.BL.Interfaces;
 using SelfSign.BL.Queries;
+using SelfSign.BL.Services;
 using SelfSign.DAL;
 using System.Reflection;
 
@@ -15,6 +18,7 @@ namespace SelfSign
             Configuration = configuration;
         }
         public IConfiguration Configuration { get; }
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
@@ -28,8 +32,28 @@ namespace SelfSign
             services.AddMediatR(typeof(SnilsUploadCommand).GetTypeInfo().Assembly);
             services.AddMediatR(typeof(PassportUploadCommand).GetTypeInfo().Assembly);
             services.AddMediatR(typeof(CreateSignMeCommand).GetTypeInfo().Assembly);
-
+            services.AddMediatR(typeof(CreateItMonitoringCommand).GetTypeInfo().Assembly);
+            services.AddSingleton<IItMonitoringService, ItMonitoringService>();
+            //services.AddHttpClient<IItMonitoringService,ItMonitoringService>("ItMonitoring", async httpClient =>
+            //{
+            //    var itMonitoringCredentials = Configuration.GetSection("ItMonitoring");
+            //    var request = new
+            //    {
+            //        Login = itMonitoringCredentials.GetValue<string>("Login"),
+            //        Password = itMonitoringCredentials.GetValue<string>("Password")
+            //    };
+            //    var authResponse = await httpClient.PostAsync(itMonitoringCredentials.GetSection("Urls")["Authorize"],
+            //          new StringContent(JsonConvert.SerializeObject(request),
+            //          System.Text.Encoding.UTF8,
+            //          "application/json"));
+            //    var responseString = await authResponse.Content.ReadAsStringAsync();
+            //    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", responseString);
+            //}).SetHandlerLifetime(TimeSpan.FromHours(1));
+            services.AddMediatR(typeof(CreateItMonitoringCommand).GetTypeInfo().Assembly);
             services.AddHttpClient();
+
+
+
 
             services.AddHttpClient("SignMe").SetHandlerLifetime(TimeSpan.FromHours(1));
             services.AddHttpClient("Dadata", httpClient =>

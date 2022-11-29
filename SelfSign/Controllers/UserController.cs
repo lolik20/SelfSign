@@ -153,7 +153,11 @@ namespace SelfSign.Controllers
             try
             {
                 var response = await _mediator.Send(request);
-                return Ok(response);
+                if (!response.IsSuccessful)
+                {
+                    return BadRequest(response.Message);
+                }
+                return Ok(response.Message);
             }
             catch (Exception ex)
             {

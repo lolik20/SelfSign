@@ -8,5 +8,7 @@ namespace SelfSign.Common.ResponseModels
 {
     public class UpdateDeliveryResponse
     {
+        public bool IsSuccessful { get; set; }
+        public string Message { get; set; }
     }
 }

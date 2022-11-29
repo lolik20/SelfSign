@@ -67,7 +67,7 @@ namespace SelfSign.BL.Commands
             formData.Add(new StringContent(request.Address), "address");
             formData.Add(new StringContent(request.Kladr.ToString()), "cladr");
             formData.Add(new StringContent(request.PhoneNumber), "phone");
-            formData.Add(new StringContent(newDeliveryEntity.Entity.RequestId.ToString()), "id");
+            formData.Add(new StringContent(newDeliveryEntity.Entity.Id.ToString()), "id");
             formData.Add(new StringContent(request.DeliveryDate), "date");
             formData.Add(new StringContent(request.Time), "time");
             formData.Add(new StringContent($"{user.Surname} {user.Name} {user.Patronymic}"), "fio");

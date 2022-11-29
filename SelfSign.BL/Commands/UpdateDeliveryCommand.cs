@@ -22,9 +22,26 @@ namespace SelfSign.BL.Commands
 
         public async Task<UpdateDeliveryResponse> Handle(UpdateDeliveryRequest request, CancellationToken cancellationToken)
         {
-            var requestEntity = _context.Deliveries.Include(x => x.Request).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == request.DeliveryId).Request;
-            var documents =  _context.Documents.Where(x => x.RequestId == requestEntity.Id);
-            
+            var deliveryEntity = _context.Deliveries.Include(x => x.Request).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == request.DeliveryId);
+            if (deliveryEntity == null)
+            {
+                return new UpdateDeliveryResponse
+                {
+                    IsSuccessful = true,
+                    Message = "Delivery not found"
+                };
+            }
+            var requestEntity = deliveryEntity.Request;
+            if (requestEntity == null)
+            {
+                return new UpdateDeliveryResponse
+                {
+                    IsSuccessful=false,
+                    Message="Request not found"
+                };
+            }
+            var documents = _context.Documents.Where(x => x.RequestId == requestEntity.Id);
+
             var statementPhotoEntity = _context.Documents.Add(new Common.Entities.Document
             {
                 Created = DateTime.UtcNow,
@@ -45,7 +62,7 @@ namespace SelfSign.BL.Commands
             statementScanEntity.Created = DateTime.UtcNow;
 
             _context.SaveChanges();
-            return new UpdateDeliveryResponse();
+            return new UpdateDeliveryResponse { IsSuccessful = true, Message = "Documents updated" };
         }
     }
 }

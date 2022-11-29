@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using SelfSign.BL.Interfaces;
 using SelfSign.BL.Services;
 using SelfSign.Common.RequestModels;
 using SelfSign.Common.ResponseModels;
@@ -19,11 +20,13 @@ namespace SelfSign.BL.Commands
         private readonly ApplicationContext _context;
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
-        public PassportUploadCommand(ApplicationContext context, IConfiguration configuration,HttpClient httpClient)
+        private readonly IFileService _fileService;
+        public PassportUploadCommand(ApplicationContext context, IConfiguration configuration,HttpClient httpClient,IFileService fileService)
         {
             _context = context;
             _configuration = configuration;
             _httpClient = httpClient;
+            _fileService = fileService;
         }
 
         public async Task<PassportUploadResponse> Handle(PassportUploadRequest request, CancellationToken cancellationToken)
@@ -34,7 +37,7 @@ namespace SelfSign.BL.Commands
                 return new PassportUploadResponse { IsSuccess = false };
             }
             var formData = new MultipartFormDataContent();
-            var fileBytes = new ByteArrayContent(FileService.FromFile(request.file));
+            var fileBytes = new ByteArrayContent(_fileService.FromFile(request.file));
             formData.Add(fileBytes, "file", request.file.FileName);
             formData.Add(new StringContent(_configuration.GetSection("Idx")["accessKey"]), "accessKey");
             formData.Add(new StringContent(_configuration.GetSection("Idx")["secretKey"]), "secretKey");
@@ -56,7 +59,7 @@ namespace SelfSign.BL.Commands
             var document = _context.Documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Passport);
             if (document != null)
             {
-                var documentUrl = await FileService.AddFile(request.file, user.Id, document.Id, "jpg");
+                var documentUrl = await _fileService.AddFile(request.file, user.Id, document.Id, "jpg");
                 document.FileUrl = documentUrl;
                 document.Created = DateTime.UtcNow;
             }
@@ -67,7 +70,7 @@ namespace SelfSign.BL.Commands
                     Created = DateTime.UtcNow,
                     RequestId = user.Requests.First().Id
                 });
-                var documentUrl = await FileService.AddFile(request.file, user.Id, newDocument.Entity.Id, "jpg");
+                var documentUrl = await _fileService.AddFile(request.file, user.Id, newDocument.Entity.Id, "jpg");
                 newDocument.Entity.FileUrl = documentUrl;
             }
             return new PassportUploadResponse

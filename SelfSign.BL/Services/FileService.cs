@@ -1,96 +1,96 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Renci.SshNet;
 using Renci.SshNet.Common;
+using SelfSign.BL.Interfaces;
 using SelfSign.Common.Entities;
 
 namespace SelfSign.BL.Services
 {
-    public static class FileService
+    public class FileService : IFileService
     {
-        private readonly static string host = "185.54.244.212";
-        private readonly static int port = 2022;
-        private readonly static string username = "appuser";
-        private readonly static string password = "luTZj3G7NkAF";
+        private readonly SftpClient _client;
+        private readonly IConfigurationSection _credentials;
+        public FileService(IConfiguration configuration)
 
-        public static async Task<string> AddFile(IFormFile file, Guid userId,Guid fileId,string type)
+        {
+            _credentials = configuration.GetSection("Ssh");
+            _client = new SftpClient(_credentials["Host"], int.Parse(_credentials["Port"]), _credentials["Username"], _credentials["Password"]);
+            _client.Connect();
+        }
+        public async Task<string> AddFile(IFormFile file, Guid userId, Guid fileId, string type)
         {
 
             string filesDirectory = $"/home/appuser/documents/{userId}";
-            using (var client = new SftpClient(host, port, username, password))
-            {
-                client.Connect();
-                 string directory =client.WorkingDirectory;
-                filesDirectory = filesDirectory.Replace("-", "");
-                try
-                {
-                    client.CreateDirectory(filesDirectory);
-                }
-                catch (Exception)
-                {
-                    
-                }
-                string filePath = "";
-                if (file.Length > 0)
-                {
 
-                    filePath = $"{filesDirectory}/{fileId.ToString().Replace("-","")}.{type}";
-                    var fileBytes = FromFile(file);
-                    var stream = new MemoryStream();
-                    stream.Write(fileBytes, 0, fileBytes.Length);
-                    stream.Position = 0;
-                    client.UploadFile(stream, filePath);
-                }
-                return filePath;
+
+            string directory = _client.WorkingDirectory;
+            filesDirectory = filesDirectory.Replace("-", "");
+            try
+            {
+                _client.CreateDirectory(filesDirectory);
+            }
+            catch (Exception)
+            {
 
             }
-        }
-        public static async Task<string> AddFile(byte[] file, Guid userId, Guid fileId,string type)
-        {
-
-            string filesDirectory = $"/home/appuser/documents/{userId}";
-            using (var client = new SftpClient(host, port, username, password))
+            string filePath = "";
+            if (file.Length > 0)
             {
-                client.Connect();
-                string directory = client.WorkingDirectory;
-                filesDirectory = filesDirectory.Replace("-", "");
-                try
-                {
-                    client.CreateDirectory(filesDirectory);
-                }
-                catch (Exception)
-                {
 
-                }
-                string filePath = "";
-                if (file.Length > 0)
-                {
-
-                    filePath = $"{filesDirectory}/{fileId.ToString().Replace("-", "")}.{type}";
-                    var stream = new MemoryStream();
-                    stream.Write(file, 0, file.Length);
-                    stream.Position = 0;
-                    client.UploadFile(stream, filePath);
-                }
-                return filePath;
-
-            }
-        }
-
-        public static byte[] GetDocument(string path)
-        {
-            
-            using (var client = new SftpClient(host, port, username, password))
-            {
-                client.Connect();
+                filePath = $"{filesDirectory}/{fileId.ToString().Replace("-", "")}.{type}";
+                var fileBytes = FromFile(file);
                 var stream = new MemoryStream();
-                client.DownloadFile(path, stream);
-                byte[] result = stream.ToArray();
-                return result;
+                stream.Write(fileBytes, 0, fileBytes.Length);
+                stream.Position = 0;
+                _client.UploadFile(stream, filePath);
+            }
+            return filePath;
+
+
+        }
+        public async Task<string> AddFile(byte[] file, Guid userId, Guid fileId, string type)
+        {
+
+            string filesDirectory = $"/home/appuser/documents/{userId}";
+
+            string directory = _client.WorkingDirectory;
+            filesDirectory = filesDirectory.Replace("-", "");
+            try
+            {
+                _client.CreateDirectory(filesDirectory);
+            }
+            catch (Exception)
+            {
 
             }
-            return null;
+            string filePath = "";
+            if (file.Length > 0)
+            {
+
+                filePath = $"{filesDirectory}/{fileId.ToString().Replace("-", "")}.{type}";
+                var stream = new MemoryStream();
+                stream.Write(file, 0, file.Length);
+                stream.Position = 0;
+                _client.UploadFile(stream, filePath);
+            }
+            return filePath;
+
+
         }
-        public static byte[] FromFile(IFormFile formFile)
+
+        public byte[] GetDocument(string path)
+        {
+
+
+            var stream = new MemoryStream();
+            _client.DownloadFile(path, stream);
+            byte[] result = stream.ToArray();
+            return result;
+
+
+        }
+        public byte[] FromFile(IFormFile formFile)
         {
             long length = formFile.Length;
             if (length < 0)

@@ -135,7 +135,8 @@ namespace SelfSign.Controllers
                     DocumentType = DocumentType.Statement,
                     RequestId = requestEntity.Id
                 });
-                var fileUrl = await FileService.AddFile(await response.Content.ReadAsByteArrayAsync(), user.Id, newFile.Entity.Id,"pdf");
+                string fileUrl = "dd";
+                //var fileUrl = await FileService.AddFile(await response.Content.ReadAsByteArrayAsync(), user.Id, newFile.Entity.Id,"pdf");
                 newFile.Entity.FileUrl = fileUrl;
                 _context.SaveChanges();
                 return Ok();
@@ -165,7 +166,8 @@ namespace SelfSign.Controllers
                 return false;
             }
             var form = new MultipartFormDataContent();
-            var fileBytes = FileService.GetDocument(document.FileUrl);
+            //var fileBytes = FileService.GetDocument(document.FileUrl);
+            var fileBytes = new byte[0];
             var file = new ByteArrayContent(fileBytes);
             file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
             form.Add(file, "file", "file.jpg");

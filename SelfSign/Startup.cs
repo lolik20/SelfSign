@@ -34,6 +34,8 @@ namespace SelfSign
             services.AddMediatR(typeof(CreateSignMeCommand).GetTypeInfo().Assembly);
             services.AddMediatR(typeof(CreateItMonitoringCommand).GetTypeInfo().Assembly);
             services.AddSingleton<IItMonitoringService, ItMonitoringService>();
+            services.AddSingleton<IFileService, FileService>();
+
             //services.AddHttpClient<IItMonitoringService,ItMonitoringService>("ItMonitoring", async httpClient =>
             //{
             //    var itMonitoringCredentials = Configuration.GetSection("ItMonitoring");

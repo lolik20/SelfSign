@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using SelfSign.BL.Interfaces;
 using SelfSign.BL.Services;
 using SelfSign.Common.RequestModels;
 using SelfSign.Common.ResponseModels;
@@ -15,9 +16,11 @@ namespace SelfSign.BL.Commands
     public class UpdateDeliveryCommand : IRequestHandler<UpdateDeliveryRequest, UpdateDeliveryResponse>
     {
         private readonly ApplicationContext _context;
-        public UpdateDeliveryCommand(ApplicationContext context)
+        private readonly IFileService _fileService;
+        public UpdateDeliveryCommand(ApplicationContext context,IFileService fileService)
         {
             _context = context;
+            _fileService = fileService;
         }
 
         public async Task<UpdateDeliveryResponse> Handle(UpdateDeliveryRequest request, CancellationToken cancellationToken)
@@ -48,16 +51,16 @@ namespace SelfSign.BL.Commands
                 DocumentType = Common.Entities.DocumentType.PhotoWithStatement,
                 RequestId = requestEntity.Id
             });
-            var statementPhotoUrl = await FileService.AddFile(request.StatementPhoto, requestEntity.User.Id, statementPhotoEntity.Entity.Id, "jpg");
+            var statementPhotoUrl = await _fileService.AddFile(request.StatementPhoto, requestEntity.User.Id, statementPhotoEntity.Entity.Id, "jpg");
             statementPhotoEntity.Entity.FileUrl = statementPhotoUrl;
 
             var passportScanEntity = documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Passport);
-            var passportScanUrl = await FileService.AddFile(request.PassportScan, requestEntity.User.Id, passportScanEntity.Id, "pdf");
+            var passportScanUrl = await _fileService.AddFile(request.PassportScan, requestEntity.User.Id, passportScanEntity.Id, "pdf");
             passportScanEntity.FileUrl = passportScanUrl;
             passportScanEntity.Created = DateTime.UtcNow;
 
             var statementScanEntity = documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Statement);
-            var statementScanUrl = await FileService.AddFile(request.StatementPhoto, requestEntity.User.Id, statementScanEntity.Id, "pdf");
+            var statementScanUrl = await _fileService.AddFile(request.StatementPhoto, requestEntity.User.Id, statementScanEntity.Id, "pdf");
             statementScanEntity.FileUrl = statementScanUrl;
             statementScanEntity.Created = DateTime.UtcNow;
 

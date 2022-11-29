@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using SelfSign.BL.Interfaces;
 using SelfSign.BL.Services;
 using SelfSign.Common.RequestModels;
 using SelfSign.Common.ResponseModels;
@@ -21,12 +22,14 @@ namespace SelfSign.BL.Commands
         private readonly ApplicationContext _context;
         private readonly IConfiguration _configuration;
         private readonly System.Net.Http.Headers.MediaTypeHeaderValue _pdfMimeType;
-        public CreateDeliveryCommand(ApplicationContext context, IConfiguration configuration,HttpClient httpClient)
+        private readonly IFileService _fileService;
+        public CreateDeliveryCommand(ApplicationContext context, IConfiguration configuration,HttpClient httpClient,IFileService fileService)
         {
             _httpClient = httpClient;
             _context = context;
             _configuration = configuration;
             _pdfMimeType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
+            _fileService = fileService;
         }
 
         public async Task<CreateDeliveryResponse> Handle(CreateDeliveryRequest request, CancellationToken cancellationToken)
@@ -72,7 +75,7 @@ namespace SelfSign.BL.Commands
             formData.Add(new StringContent(request.Time), "time");
             formData.Add(new StringContent($"{user.Surname} {user.Name} {user.Patronymic}"), "fio");
 
-            var fileBytes = FileService.GetDocument(requestEntity.Documents.First(x => x.DocumentType == Common.Entities.DocumentType.Statement).FileUrl);
+            var fileBytes = _fileService.GetDocument(requestEntity.Documents.First(x => x.DocumentType == Common.Entities.DocumentType.Statement).FileUrl);
             var file = new ByteArrayContent(fileBytes);
             file.Headers.ContentType = _pdfMimeType;
             formData.Add(file, "file", "file.pdf");

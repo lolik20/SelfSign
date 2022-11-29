@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SelfSign.BL.Interfaces;
 using SelfSign.BL.Services;
 using SelfSign.Common.Entities;
 using SelfSign.Common.RequestModels;
@@ -18,12 +19,14 @@ namespace SelfSign.Controllers
         private readonly IConfiguration _configuration;
         private readonly IConfigurationSection _regex;
         private readonly IMediator _mediator;
-        public UserController(ApplicationContext context, IConfiguration configuration, IMediator mediator)
+        private readonly IFileService _fileService;
+        public UserController(ApplicationContext context, IConfiguration configuration, IMediator mediator, IFileService fileService)
         {
             _context = context;
             _configuration = configuration;
             _regex = _configuration.GetSection("regex");
             _mediator = mediator;
+            _fileService = fileService;
         }
         [HttpGet]
         public async Task<IActionResult> GetUser([FromQuery] Guid id)
@@ -35,6 +38,7 @@ namespace SelfSign.Controllers
             }
             return Ok(user);
         }
+        
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
@@ -296,6 +300,7 @@ namespace SelfSign.Controllers
 
 
     }
+   
     public class CreateUserRequest
     {
         public string Name { get; set; }

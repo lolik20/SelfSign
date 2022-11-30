@@ -38,7 +38,7 @@ namespace SelfSign.Controllers
             }
             return Ok(user);
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
@@ -88,7 +88,15 @@ namespace SelfSign.Controllers
 
 
                 });
+                
                 await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата http://31.184.240.87/{newEntity.Entity.Id}");
+                _context.Requests.Add(new Common.Entities.Request
+                {
+                    VerificationCenter = request.VerificationCenter,
+                    Created = DateTime.UtcNow,
+                    UserId = newEntity.Entity.Id,
+                    RequestId="0"
+                });
                 _context.SaveChanges();
                 return Ok(newEntity.Entity.Id);
             }
@@ -168,6 +176,22 @@ namespace SelfSign.Controllers
                 return BadRequest(ex);
             }
         }
+        [HttpGet("delivery/{id}")]
+        public async Task<IActionResult> GetDelivery([FromRoute] Guid id)
+        {
+            var delivery = _context.Deliveries.FirstOrDefault(x => x.Id==id);
+            if (delivery == null)
+            {
+                return NotFound();
+            }
+            return Ok(new
+            {
+                date = delivery.DeliveryDate.ToString("dd.MM.yyyy"),
+                time= delivery.Time,
+                address=delivery.Address,
+                
+            });
+        }
         [HttpPost("delivery")]
         public async Task<IActionResult> CreateDelivery([FromBody] CreateDeliveryRequest request)
         {
@@ -176,9 +200,9 @@ namespace SelfSign.Controllers
                 var response = await _mediator.Send(request);
                 if (!response.IsSuccess)
                 {
-                    return BadRequest();
+                    return BadRequest(response.Message);
                 }
-                return Ok(response);
+                return Ok(response.Message);
             }
             catch (Exception ex)
             {
@@ -264,12 +288,22 @@ namespace SelfSign.Controllers
             {
                 return BadRequest();
             }
+
             var user = _context.Users.FirstOrDefault(x => x.Id == request.Id);
             if (user == null)
             {
                 return NotFound();
             }
+            if (request.Snils != null)
+            {
+                user.Snils = request.Snils;
+            }
+            if (request.Inn != null)
+            {
+                user.Inn= request.Inn;
+            }
             var gender = (Gender)Enum.ToObject(typeof(Gender), request.Gender);
+            
             user.Name = request.Name;
             user.Surname = request.Surname;
             user.Patronymic = request.Patronymic;
@@ -300,7 +334,7 @@ namespace SelfSign.Controllers
 
 
     }
-   
+
     public class CreateUserRequest
     {
         public string Name { get; set; }
@@ -308,6 +342,7 @@ namespace SelfSign.Controllers
         public string Patronymic { get; set; }
         public string Phone { get; set; }
         public SignatureType SignatureType { get; set; }
+        public VerificationCenter VerificationCenter { get; set; }
     }
     public class FirstUpdateRequest
     {
@@ -332,7 +367,8 @@ namespace SelfSign.Controllers
         public string BirthDate { get; set; }
         public string IssueDate { get; set; }
         public string SubDivisionCode { get; set; }
-
+        public string? Inn { get; set; }
+        public string? Snils { get; set; }
         public string SubDivisionAddress { get; set; }
         public int Gender { get; set; }
         public long RegionCode { get; set; }

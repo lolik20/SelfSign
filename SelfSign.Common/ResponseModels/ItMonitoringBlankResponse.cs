@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace SelfSign.Common.ResponseModels
 {
-    public class CreateDeliveryResponse
+    public class ItMonitoringBlankResponse
     {
-        public bool IsSuccess { get; set; }
+        public bool IsSuccessful { get; set; }
         public string Message { get; set; }
     }
 }

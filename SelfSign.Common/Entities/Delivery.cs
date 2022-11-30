@@ -14,6 +14,7 @@ namespace SelfSign.Common.Entities
         public DateTime DeliveryDate { get; set; }
         public string Time { get; set; }
         public string Cladr { get; set; }
+        public string Address { get; set; }
         [ForeignKey("Request")]
         public Guid RequestId { get; set; }
         public Request Request { get; set; }

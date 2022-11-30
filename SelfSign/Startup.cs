@@ -35,34 +35,18 @@ namespace SelfSign
             services.AddMediatR(typeof(CreateItMonitoringCommand).GetTypeInfo().Assembly);
             services.AddSingleton<IItMonitoringService, ItMonitoringService>();
             services.AddSingleton<IFileService, FileService>();
-
-            //services.AddHttpClient<IItMonitoringService,ItMonitoringService>("ItMonitoring", async httpClient =>
-            //{
-            //    var itMonitoringCredentials = Configuration.GetSection("ItMonitoring");
-            //    var request = new
-            //    {
-            //        Login = itMonitoringCredentials.GetValue<string>("Login"),
-            //        Password = itMonitoringCredentials.GetValue<string>("Password")
-            //    };
-            //    var authResponse = await httpClient.PostAsync(itMonitoringCredentials.GetSection("Urls")["Authorize"],
-            //          new StringContent(JsonConvert.SerializeObject(request),
-            //          System.Text.Encoding.UTF8,
-            //          "application/json"));
-            //    var responseString = await authResponse.Content.ReadAsStringAsync();
-            //    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", responseString);
-            //}).SetHandlerLifetime(TimeSpan.FromHours(1));
             services.AddMediatR(typeof(CreateItMonitoringCommand).GetTypeInfo().Assembly);
             services.AddHttpClient();
 
 
 
 
-            services.AddHttpClient("SignMe").SetHandlerLifetime(TimeSpan.FromHours(1));
+            services.AddHttpClient("SignMe").SetHandlerLifetime(TimeSpan.FromDays(1));
             services.AddHttpClient("Dadata", httpClient =>
             {
                 httpClient.DefaultRequestHeaders.Add("X-Secret", Configuration.GetSection("Dadata")["Secret"]);
                 httpClient.DefaultRequestHeaders.Add("Authorization", $"Token {Configuration.GetSection("Dadata")["Api"]}");
-            }).SetHandlerLifetime(TimeSpan.FromHours(1));
+            }).SetHandlerLifetime(TimeSpan.FromDays(1));
 
             services.AddDbContext<ApplicationContext>(x =>
 x.UseNpgsql(Configuration.GetConnectionString("Database")));

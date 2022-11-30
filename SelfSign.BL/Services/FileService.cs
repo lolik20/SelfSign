@@ -90,6 +90,7 @@ namespace SelfSign.BL.Services
 
 
         }
+        
         public byte[] FromFile(IFormFile formFile)
         {
             long length = formFile.Length;

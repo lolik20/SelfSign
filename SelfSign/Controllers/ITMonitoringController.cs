@@ -79,20 +79,19 @@ namespace SelfSign.Controllers
             
         }
         [HttpGet("documents/upload")]
-        public async Task<IActionResult> SendDocuments([FromQuery] Guid id)
+        public async Task<IActionResult> SendDocuments([FromQuery] ItMonitoringPassportRequest request)
         {
-            var user = _context.Users.FirstOrDefault(x => x.Id == id);
-            if (user == null)
+            var response =await _mediator.Send(request);
+            if (response.IsSuccessful)
             {
-                return NotFound();
+                return Ok(response.Message);
             }
-            var documents = await Documents(user.Requests.OrderBy(x => x.Created).First().RequestId);
-            var result = await Confirm(user.Requests.OrderBy(x => x.Created).First().RequestId);
-            return Ok(result);
+            return BadRequest(response.Message);
         }
+
+
         private async Task<dynamic> Confirm(string requestId)
         {
-            await Authorize();
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Confirmation).Value;
             var response = await _httpClient.PostAsync(url.Replace("$requestId", requestId), null);
             dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
@@ -110,42 +109,46 @@ namespace SelfSign.Controllers
             return Ok(result);
         }
         [HttpGet("blank")]
-        public async Task<IActionResult> GetBlank([FromQuery] Guid id)
+        public async Task<IActionResult> GetBlank([FromQuery] ItMonitoringBlankRequest request)
         {
-            await Authorize();
-
-            var user = _context.Users.FirstOrDefault(x => x.Id == id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            var requestEntity = _context.Requests.OrderBy(x => x.Created).First(x => x.UserId == id);
-            var document = requestEntity.Documents.OrderBy(x => x.Created).Where(x => x.DocumentType == DocumentType.Statement).FirstOrDefault();
-            if (document != null)
-            {
-                return Ok();
-            }
-            var url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.GetRequest).Value;
-            var response = await _httpClient.GetAsync(url.Replace("$requestId", user.Requests[0].RequestId));
-
-            if (response.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                var newFile = _context.Documents.Add(new Document
-                {
-                    DocumentType = DocumentType.Statement,
-                    RequestId = requestEntity.Id
-                });
-                string fileUrl = "dd";
-                //var fileUrl = await FileService.AddFile(await response.Content.ReadAsByteArrayAsync(), user.Id, newFile.Entity.Id,"pdf");
-                newFile.Entity.FileUrl = fileUrl;
-                _context.SaveChanges();
-                return Ok();
-            }
-            return BadRequest(await response.Content.ReadAsStringAsync());
+            var response =await _mediator.Send(request);
+            return Ok(response);
         }
+        //[HttpGet("blank")]
+        //public async Task<IActionResult> GetBlank([FromQuery] Guid id)
+        //{
+
+        //    var user = _context.Users.FirstOrDefault(x => x.Id == id);
+        //    if (user == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    var requestEntity = _context.Requests.OrderBy(x => x.Created).First(x => x.UserId == id);
+        //    var document = requestEntity.Documents.OrderBy(x => x.Created).Where(x => x.DocumentType == DocumentType.Statement).FirstOrDefault();
+        //    if (document != null)
+        //    {
+        //        return Ok();
+        //    }
+        //    var url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.GetRequest).Value;
+        //    var response = await _httpClient.GetAsync(url.Replace("$requestId", user.Requests[0].RequestId));
+
+        //    if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        //    {
+        //        var newFile = _context.Documents.Add(new Document
+        //        {
+        //            DocumentType = DocumentType.Statement,
+        //            RequestId = requestEntity.Id
+        //        });
+        //        string fileUrl = "dd";
+        //        //var fileUrl = await FileService.AddFile(await response.Content.ReadAsByteArrayAsync(), user.Id, newFile.Entity.Id,"pdf");
+        //        newFile.Entity.FileUrl = fileUrl;
+        //        _context.SaveChanges();
+        //        return Ok();
+        //    }
+        //    return BadRequest(await response.Content.ReadAsStringAsync());
+        //}
         private async Task<dynamic> Documents(string requestId)
         {
-            await Authorize();
             string url = urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Documents).Value;
             var response = await _httpClient.GetAsync(url.Replace("$requestId", requestId));
             dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());

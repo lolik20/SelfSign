@@ -23,23 +23,26 @@ namespace SelfSign.BL.Commands
         private readonly IConfiguration _configuration;
         private readonly System.Net.Http.Headers.MediaTypeHeaderValue _pdfMimeType;
         private readonly IFileService _fileService;
-        public CreateDeliveryCommand(ApplicationContext context, IConfiguration configuration,HttpClient httpClient,IFileService fileService)
+        private readonly IMediator _mediator;
+        public CreateDeliveryCommand(ApplicationContext context, IConfiguration configuration,HttpClient httpClient,IFileService fileService,IMediator mediator)
         {
             _httpClient = httpClient;
             _context = context;
             _configuration = configuration;
             _pdfMimeType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
             _fileService = fileService;
+            _mediator = mediator;
         }
 
         public async Task<CreateDeliveryResponse> Handle(CreateDeliveryRequest request, CancellationToken cancellationToken)
         {
-            var user = _context.Users.Include(x => x.Requests).ThenInclude(x => x.Documents).FirstOrDefault(x => x.Id == request.UserId);
-            if (user == null)
+            var user = _context.Users.Include(x => x.Requests.OrderByDescending(x=>x.Created)).ThenInclude(x => x.Documents).FirstOrDefault(x => x.Id == request.UserId);
+            if (user == null||user.Requests.Count()==0)
             {
                 return new CreateDeliveryResponse
                 {
-                    IsSuccess = false
+                    IsSuccess = false,
+                    Message="Пользователь не найден или нет заявок"
                 };
             }
             DateTime date = new DateTime();
@@ -48,18 +51,21 @@ namespace SelfSign.BL.Commands
             {
                 return new CreateDeliveryResponse
                 {
-                    IsSuccess = false
+                    IsSuccess = false,
+                    Message="Неверная дата"
                 };
             }
-            bool isValidCladr = IsValidCladr(request.Kladr.ToString());
+            var cladrResponse = await _mediator.Send(new AddressRequest { query = user.RegAddress });
+            var cladr = cladrResponse.First().Kladr.ToString();
+            bool isValidCladr = IsValidCladr(cladr);
             if (!isValidCladr)
             {
-                return new CreateDeliveryResponse { IsSuccess = false };
+                return new CreateDeliveryResponse { IsSuccess = false,Message="Доставка по данному адресу невозможна" };
             }
             var requestEntity = user.Requests.OrderBy(x => x.Created).First();
             var newDeliveryEntity = _context.Deliveries.Add(new Common.Entities.Delivery
             {
-                Cladr = request.Kladr,
+                Cladr = cladr,
                 DeliveryDate = date.ToUniversalTime(),
                 Created = DateTime.UtcNow,
                 RequestId = requestEntity.Id,
@@ -68,7 +74,7 @@ namespace SelfSign.BL.Commands
             });
             var formData = new MultipartFormDataContent();
             formData.Add(new StringContent(request.Address), "address");
-            formData.Add(new StringContent(request.Kladr.ToString()), "cladr");
+            formData.Add(new StringContent(cladr), "cladr");
             formData.Add(new StringContent(request.PhoneNumber), "phone");
             formData.Add(new StringContent(newDeliveryEntity.Entity.Id.ToString()), "id");
             formData.Add(new StringContent(request.DeliveryDate), "date");
@@ -87,13 +93,15 @@ namespace SelfSign.BL.Commands
             {
                 return new CreateDeliveryResponse
                 {
-                    IsSuccess = false
+                    IsSuccess = false,
+                    Message="Ошибка при запросе доставки"
                 };
             }
             _context.SaveChanges();
             return new CreateDeliveryResponse()
             {
-                IsSuccess = true
+                IsSuccess = true,
+                Message=newDeliveryEntity.Entity.Id.ToString()
             };
         }
         public bool IsValidCladr(string cladr)

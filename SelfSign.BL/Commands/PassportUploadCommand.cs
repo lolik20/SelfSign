@@ -62,17 +62,20 @@ namespace SelfSign.BL.Commands
                 var documentUrl = await _fileService.AddFile(request.file, user.Id, document.Id, "jpg");
                 document.FileUrl = documentUrl;
                 document.Created = DateTime.UtcNow;
+                document.DocumentType = Common.Entities.DocumentType.Passport;
             }
             if (document == null)
             {
                 var newDocument = _context.Documents.Add(new Common.Entities.Document
                 {
                     Created = DateTime.UtcNow,
-                    RequestId = user.Requests.First().Id
+                    RequestId = user.Requests.First().Id,
+                    DocumentType=Common.Entities.DocumentType.Passport
                 });
                 var documentUrl = await _fileService.AddFile(request.file, user.Id, newDocument.Entity.Id, "jpg");
                 newDocument.Entity.FileUrl = documentUrl;
             }
+            _context.SaveChanges();
             return new PassportUploadResponse
             {
                 IsSuccess = true,

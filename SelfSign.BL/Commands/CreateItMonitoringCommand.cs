@@ -18,22 +18,27 @@ namespace SelfSign.BL.Commands
     {
         private readonly IItMonitoringService _itMonitoring;
         private readonly ApplicationContext _context;
-        public CreateItMonitoringCommand(ApplicationContext context, IItMonitoringService itMonitoring)
+        private readonly IMediator _mediator;
+        public CreateItMonitoringCommand(ApplicationContext context, IItMonitoringService itMonitoring, IMediator mediator)
         {
             _context = context;
             _itMonitoring = itMonitoring;
+            _mediator = mediator;
         }
         public async Task<CreateItMonitoringResponse> Handle(CreateItMonitoringRequest request, CancellationToken cancellationToken)
         {
-            var user = _context.Users.Include(x => x.Requests).FirstOrDefault(x => x.Id == request.Id);
-            if (user == null || user.Requests.Count(x => x.VerificationCenter == VerificationCenter.ItMonitoring) > 0)
+            var user = _context.Users.Include(x => x.Requests.OrderByDescending(x => x.Created)).FirstOrDefault(x => x.Id == request.Id);
+            if (user == null || user.Requests.Count(x => x.VerificationCenter == VerificationCenter.ItMonitoring) == 0)
             {
                 return new CreateItMonitoringResponse
                 {
                     IsSuccessful = false,
-                    Message = "User not found or exist request"
+                    Message = "Пользователь не найден или у вас другой УЦ"
                 };
             }
+            var requestEntity = user.Requests.First(x => x.VerificationCenter == VerificationCenter.ItMonitoring);
+            var cladr = await _mediator.Send(new AddressRequest { query = user.RegAddress });
+
             var createRequest = new
             {
                 OwnerType = 1,
@@ -46,6 +51,7 @@ namespace SelfSign.BL.Commands
                 {
                     City = user.BirthPlace,
                     Value = user.RegAddress,
+                    RegionCode = cladr.First().ShortKladr.ToString()
                 },
                 Owner = new
                 {
@@ -78,15 +84,7 @@ namespace SelfSign.BL.Commands
                     Message = createResponse.Item2
                 };
             }
-
-            var newRequest = new Request
-            {
-                Created = DateTime.Now.ToUniversalTime(),
-                UserId = user.Id,
-                RequestId = createResponse.Item2,
-                VerificationCenter = VerificationCenter.ItMonitoring
-            };
-            _context.Requests.Add(newRequest);
+            requestEntity.RequestId = createResponse.Item2;
             _context.SaveChanges();
             return new CreateItMonitoringResponse
             {

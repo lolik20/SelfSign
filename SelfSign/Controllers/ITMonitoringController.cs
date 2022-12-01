@@ -36,26 +36,26 @@ namespace SelfSign.Controllers
         }
         private async Task Authorize()
         {
-          
 
-                var credentials = _configuration.GetSection("ItMonitoring");
-                var request = new
-                {
-                    Login = credentials.GetValue<string>("Login"),
-                    Password = credentials.GetValue<string>("Password")
-                };
 
-                var response = await _httpClient.PostAsync(
-                    urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Authorize).Value,
-                    new StringContent(JsonConvert.SerializeObject(request),
-                    System.Text.Encoding.UTF8,
-                    "application/json"));
-                var requestStrin = await response.RequestMessage.Content.ReadAsStringAsync();
-                var responseString = await response.Content.ReadAsStringAsync();
-                _httpClient.DefaultRequestHeaders.Authorization=new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", responseString);
+            var credentials = _configuration.GetSection("ItMonitoring");
+            var request = new
+            {
+                Login = credentials.GetValue<string>("Login"),
+                Password = credentials.GetValue<string>("Password")
+            };
+
+            var response = await _httpClient.PostAsync(
+                urls.FirstOrDefault(x => x.Key == ITMonitoringMethods.Authorize).Value,
+                new StringContent(JsonConvert.SerializeObject(request),
+                System.Text.Encoding.UTF8,
+                "application/json"));
+            var requestStrin = await response.RequestMessage.Content.ReadAsStringAsync();
+            var responseString = await response.Content.ReadAsStringAsync();
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", responseString);
             _httpClient.Timeout = TimeSpan.FromSeconds(4);
         }
-        
+
         [HttpGet("request")]
         public async Task<IActionResult> Request([FromQuery] CreateItMonitoringRequest request)
         {
@@ -76,12 +76,12 @@ namespace SelfSign.Controllers
                 return BadRequest();
             }
             return Ok();
-            
+
         }
         [HttpGet("documents/upload")]
         public async Task<IActionResult> SendDocuments([FromQuery] ItMonitoringPassportRequest request)
         {
-            var response =await _mediator.Send(request);
+            var response = await _mediator.Send(request);
             if (response.IsSuccessful)
             {
                 return Ok(response.Message);
@@ -111,8 +111,13 @@ namespace SelfSign.Controllers
         [HttpGet("blank")]
         public async Task<IActionResult> GetBlank([FromQuery] ItMonitoringBlankRequest request)
         {
-            var response =await _mediator.Send(request);
-            return Ok(response);
+
+            var response = await _mediator.Send(request);
+            if (response.IsSuccessful)
+            {
+                return Ok(response.Message);
+            }
+            return BadRequest(response.Message);
         }
         //[HttpGet("blank")]
         //public async Task<IActionResult> GetBlank([FromQuery] Guid id)

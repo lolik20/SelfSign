@@ -55,7 +55,7 @@ namespace SelfSign.BL.Commands
                     Message="Неверная дата"
                 };
             }
-            var cladrResponse = await _mediator.Send(new AddressRequest { query = user.RegAddress });
+            var cladrResponse = await _mediator.Send(new AddressRequest { query = request.Address });
             var cladr = cladrResponse.First().Kladr.ToString();
             bool isValidCladr = IsValidCladr(cladr);
             if (!isValidCladr)

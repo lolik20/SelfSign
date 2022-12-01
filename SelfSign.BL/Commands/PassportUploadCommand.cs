@@ -31,7 +31,7 @@ namespace SelfSign.BL.Commands
 
         public async Task<PassportUploadResponse> Handle(PassportUploadRequest request, CancellationToken cancellationToken)
         {
-            var user = _context.Users.Include(x => x.Requests.OrderBy(x => x.Created)).FirstOrDefault(x => x.Id == request.Id);
+            var user = _context.Users.Include(x => x.Requests.OrderBy(x => x.Created)).ThenInclude(x=>x.Documents).FirstOrDefault(x => x.Id == request.Id);
             if (user == null)
             {
                 return new PassportUploadResponse { IsSuccess = false };
@@ -56,7 +56,7 @@ namespace SelfSign.BL.Commands
             //        fields.Add(propertyName, value);
             //    }
             //}
-            var document = _context.Documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Passport);
+            var document = user.Requests.First().Documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Passport);
             if (document != null)
             {
                 var documentUrl = await _fileService.AddFile(request.file, user.Id, document.Id, "jpg");

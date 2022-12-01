@@ -182,7 +182,7 @@ namespace SelfSign.Controllers
             var delivery = _context.Deliveries.FirstOrDefault(x => x.Id==id);
             if (delivery == null)
             {
-                return NotFound();
+                return BadRequest();
             }
             return Ok(new
             {

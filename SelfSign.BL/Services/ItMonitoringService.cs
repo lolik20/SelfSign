@@ -118,6 +118,15 @@ namespace SelfSign.BL.Services
             }
             return false;
         }
+        public async Task<bool> SimulateConfirmation(string requestId)
+        {
+            var response = await _httpClient.PostAsync(_urls["SimulateConfirmation"].Replace("$requestId", requestId), null);
+            if(response.StatusCode==System.Net.HttpStatusCode.OK)
+            {
+                return true;
+            }
+            return false;
+        }
         public async Task<bool> UploadDocuments(string requestId, Dictionary<byte[], DocumentType> documents)
         {
             //var form = new MultipartFormDataContent();

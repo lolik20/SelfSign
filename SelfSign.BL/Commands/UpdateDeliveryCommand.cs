@@ -17,10 +17,12 @@ namespace SelfSign.BL.Commands
     {
         private readonly ApplicationContext _context;
         private readonly IFileService _fileService;
-        public UpdateDeliveryCommand(ApplicationContext context,IFileService fileService)
+        private readonly IItMonitoringService _itMonitoring;
+        public UpdateDeliveryCommand(ApplicationContext context, IFileService fileService, IItMonitoringService itMonitoring)
         {
             _context = context;
             _fileService = fileService;
+            _itMonitoring = itMonitoring;
         }
 
         public async Task<UpdateDeliveryResponse> Handle(UpdateDeliveryRequest request, CancellationToken cancellationToken)
@@ -39,8 +41,8 @@ namespace SelfSign.BL.Commands
             {
                 return new UpdateDeliveryResponse
                 {
-                    IsSuccessful=false,
-                    Message="Request not found"
+                    IsSuccessful = false,
+                    Message = "Request not found"
                 };
             }
             var documents = _context.Documents.Where(x => x.RequestId == requestEntity.Id);
@@ -60,10 +62,27 @@ namespace SelfSign.BL.Commands
             passportScanEntity.Created = DateTime.UtcNow;
 
             var statementScanEntity = documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Statement);
-            var statementScanUrl = await _fileService.AddFile(request.StatementPhoto, requestEntity.User.Id, statementScanEntity.Id, "pdf");
+            var statementScanUrl = await _fileService.AddFile(request.StatementScan, requestEntity.User.Id, statementScanEntity.Id, "pdf");
             statementScanEntity.FileUrl = statementScanUrl;
             statementScanEntity.Created = DateTime.UtcNow;
+            _context.SaveChanges();
+            switch (requestEntity.VerificationCenter)
+            {
+                case Common.Entities.VerificationCenter.ItMonitoring:
 
+                    var isUploaded = await _itMonitoring.UploadDocuments(requestEntity.RequestId, _fileService.FromFile(request.StatementScan), Common.Entities.DocumentType.Statement, "statementScan", "pdf", "application/pdf");
+                    if (isUploaded)
+                    {
+                        var isConfirmed = await _itMonitoring.Confirmation(requestEntity.RequestId);
+                        if (isConfirmed)
+                        {
+                            await _itMonitoring.SimulateConfirmation(requestEntity.RequestId);
+                        }
+                    }
+
+                    break;
+            }
+            deliveryEntity.Status = Common.Entities.DeliveryStatus.Completed;
             _context.SaveChanges();
             return new UpdateDeliveryResponse { IsSuccessful = true, Message = "Documents updated" };
         }

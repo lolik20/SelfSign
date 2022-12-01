@@ -18,6 +18,7 @@ namespace SelfSign.Common.Entities
         [ForeignKey("Request")]
         public Guid RequestId { get; set; }
         public Request Request { get; set; }
+        public DeliveryStatus Status { get; set; }
         public VerificationCenter VerificationCenter { get; set; }
     }
 }

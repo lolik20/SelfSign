@@ -70,6 +70,7 @@ namespace SelfSign.BL.Commands
                 Created = DateTime.UtcNow,
                 RequestId = requestEntity.Id,
                 Time = request.Time,
+                Address=request.Address,
                 VerificationCenter = requestEntity.VerificationCenter
             });
             var formData = new MultipartFormDataContent();

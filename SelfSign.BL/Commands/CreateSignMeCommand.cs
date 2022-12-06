@@ -37,7 +37,7 @@ namespace SelfSign.BL.Commands
         {
 
             var user = _context.Users.Include(x => x.Requests).FirstOrDefault(x => x.Id == request.Id);
-            if (user == null || user.Requests.Count(x => x.VerificationCenter == Common.Entities.VerificationCenter.SignMe) > 0)
+            if (user == null || user.Requests.Count(x => x.VerificationCenter ==VerificationCenter.SignMe) > 0)
             {
                 return new SignMeResponse
                 {
@@ -95,7 +95,7 @@ namespace SelfSign.BL.Commands
                     Message = (string)signMeResponseObject,
                 };
             }
-            _context.Requests.Add(new Common.Entities.Request
+            _context.Requests.Add(new Request
             {
                 Created = DateTime.Now.ToUniversalTime(),
                 UserId = user.Id,

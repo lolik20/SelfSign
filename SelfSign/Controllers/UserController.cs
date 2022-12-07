@@ -89,7 +89,7 @@ namespace SelfSign.Controllers
 
                 });
                 
-                await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата http://signself.ru/{newEntity.Entity.Id}/itmonitoring");
+                await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата http://signself.ru/{newEntity.Entity.Id}/ITMonitoring");
                 _context.Requests.Add(new Request
                 {
                     VerificationCenter = request.VerificationCenter,

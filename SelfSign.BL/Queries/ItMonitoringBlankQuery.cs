@@ -58,7 +58,7 @@ namespace SelfSign.BL.Queries
             var newDocument = _context.Documents.Add(
                 new Common.Entities.Document
                 {
-                    Created = DateTime.UtcNow,
+                    Created = DateTime.UtcNow,  
                     DocumentType = Common.Entities.DocumentType.Statement,
                     RequestId = requestEntity.Id
                 });

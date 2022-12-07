@@ -70,9 +70,10 @@ namespace SelfSign.BL.Commands
                 Created = DateTime.UtcNow,
                 RequestId = requestEntity.Id,
                 Time = request.Time,
-                Address=request.Address,
-                VerificationCenter = requestEntity.VerificationCenter
-            });
+                Address = request.Address,
+                VerificationCenter = requestEntity.VerificationCenter,
+                TrackNumber = new Random().Next(0,1000000)
+            }) ;
             var formData = new MultipartFormDataContent();
             formData.Add(new StringContent(request.Address), "address");
             formData.Add(new StringContent(cladr), "cladr");
@@ -102,7 +103,7 @@ namespace SelfSign.BL.Commands
             return new CreateDeliveryResponse()
             {
                 IsSuccess = true,
-                Message=newDeliveryEntity.Entity.Id.ToString()
+                Message=newDeliveryEntity.Entity.TrackNumber.ToString()
             };
         }
         public bool IsValidCladr(string cladr)

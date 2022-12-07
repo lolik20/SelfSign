@@ -31,12 +31,21 @@ namespace SelfSign.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUser([FromQuery] Guid id)
         {
-            var user = _context.Users.FirstOrDefault(x => x.Id == id);
+            var user = _context.Users.Include(x => x.Requests.OrderByDescending(x => x.Created)).FirstOrDefault(x => x.Id == id);
             if (user == null)
             {
                 return NotFound();
             }
-            return Ok(user);
+            return Ok(new
+            {
+                Name = user.Name,
+                Surname = user.Surname,
+                Patronymic = user.Patronymic,
+                SignatureType =(int)user.Requests.First().VerificationCenter,
+                Id=user.Id,
+                Email=user.Email,
+                Phone =user.Phone,
+            });
         }
 
         [HttpPost]
@@ -72,8 +81,6 @@ namespace SelfSign.Controllers
                     BirthDate = DateTime.Now.ToUniversalTime(),
                     RegDate = DateTime.Now.ToUniversalTime(),
                     IssueDate = DateTime.Now.ToUniversalTime(),
-
-                    SignatureType = request.SignatureType,
                     Serial = "",
                     SubDivisionAddress = "",
                     SubDivisionCode = "",
@@ -88,14 +95,14 @@ namespace SelfSign.Controllers
 
 
                 });
-                
-                await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата http://signself.ru/{newEntity.Entity.Id}/ITMonitoring");
+
+                await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата http://signself.ru/{newEntity.Entity.Id}/itmonitoring");
                 _context.Requests.Add(new Request
                 {
                     VerificationCenter = request.VerificationCenter,
                     Created = DateTime.UtcNow,
                     UserId = newEntity.Entity.Id,
-                    RequestId="0"
+                    RequestId = "0"
                 });
                 _context.SaveChanges();
                 return Ok(newEntity.Entity.Id);
@@ -177,9 +184,9 @@ namespace SelfSign.Controllers
             }
         }
         [HttpGet("delivery/{id}")]
-        public async Task<IActionResult> GetDelivery([FromRoute] Guid id)
+        public async Task<IActionResult> GetDelivery([FromRoute] int id)
         {
-            var delivery = _context.Deliveries.FirstOrDefault(x => x.Id==id);
+            var delivery = _context.Deliveries.FirstOrDefault(x => x.TrackNumber == id);
             if (delivery == null)
             {
                 return BadRequest();
@@ -187,9 +194,9 @@ namespace SelfSign.Controllers
             return Ok(new
             {
                 date = delivery.DeliveryDate.ToString("dd.MM.yyyy"),
-                time= delivery.Time,
-                address=delivery.Address,
-                
+                time = delivery.Time,
+                address = delivery.Address,
+
             });
         }
         [HttpPost("delivery")]
@@ -300,10 +307,10 @@ namespace SelfSign.Controllers
             }
             if (request.Inn != null)
             {
-                user.Inn= request.Inn;
+                user.Inn = request.Inn;
             }
             var gender = (Gender)Enum.ToObject(typeof(Gender), request.Gender);
-            
+
             user.Name = request.Name;
             user.Surname = request.Surname;
             user.Patronymic = request.Patronymic;

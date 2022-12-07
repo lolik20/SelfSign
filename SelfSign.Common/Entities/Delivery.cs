@@ -19,6 +19,7 @@ namespace SelfSign.Common.Entities
         public Guid RequestId { get; set; }
         public Request Request { get; set; }
         public DeliveryStatus Status { get; set; }
+        public int TrackNumber { get; set; }
         public VerificationCenter VerificationCenter { get; set; }
     }
 }

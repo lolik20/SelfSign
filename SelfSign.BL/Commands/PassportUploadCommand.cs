@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using ImageMagick;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -21,7 +22,7 @@ namespace SelfSign.BL.Commands
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly IFileService _fileService;
-        public PassportUploadCommand(ApplicationContext context, IConfiguration configuration,HttpClient httpClient,IFileService fileService)
+        public PassportUploadCommand(ApplicationContext context, IConfiguration configuration, HttpClient httpClient, IFileService fileService)
         {
             _context = context;
             _configuration = configuration;
@@ -31,13 +32,26 @@ namespace SelfSign.BL.Commands
 
         public async Task<PassportUploadResponse> Handle(PassportUploadRequest request, CancellationToken cancellationToken)
         {
-            var user = _context.Users.Include(x => x.Requests.OrderBy(x => x.Created)).ThenInclude(x=>x.Documents).FirstOrDefault(x => x.Id == request.Id);
+            var user = _context.Users.Include(x => x.Requests.OrderBy(x => x.Created)).ThenInclude(x => x.Documents).FirstOrDefault(x => x.Id == request.Id);
             if (user == null)
             {
                 return new PassportUploadResponse { IsSuccess = false };
             }
+            var bytes = _fileService.FromFile(request.file);
+            if (request.file.ContentType == "image/heic"||request.file.ContentType== "image/heif")
+            {
+                using (MemoryStream memStream = new MemoryStream())
+                {
+                    using (MagickImage image = new MagickImage(bytes))
+                    {
+                        image.Format = MagickFormat.Jpg;
+                        image.Write(memStream);
+                    }
+                    bytes = memStream.ToArray();
+                }
+            }
             var formData = new MultipartFormDataContent();
-            var fileBytes = new ByteArrayContent(_fileService.FromFile(request.file));
+            var fileBytes = new ByteArrayContent(bytes);
             formData.Add(fileBytes, "file", request.file.FileName);
             formData.Add(new StringContent(_configuration.GetSection("Idx")["accessKey"]), "accessKey");
             formData.Add(new StringContent(_configuration.GetSection("Idx")["secretKey"]), "secretKey");
@@ -70,7 +84,7 @@ namespace SelfSign.BL.Commands
                 {
                     Created = DateTime.UtcNow,
                     RequestId = user.Requests.First().Id,
-                    DocumentType=Common.Entities.DocumentType.Passport
+                    DocumentType = Common.Entities.DocumentType.Passport
                 });
                 var documentUrl = await _fileService.AddFile(request.file, user.Id, newDocument.Entity.Id, "jpg");
                 newDocument.Entity.FileUrl = documentUrl;

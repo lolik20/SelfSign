@@ -73,7 +73,7 @@ namespace SelfSign.BL.Commands
             return new ItMonitoringPassportResponse
             {
                 IsSuccessful = false,
-                Message = $"Идентификация личности не пройдена: {error}"
+                Message = $"Превышено время ожидания, обратитесь в тех поддержку"
             };
 
 

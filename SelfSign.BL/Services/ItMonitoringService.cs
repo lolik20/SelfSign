@@ -109,6 +109,7 @@ namespace SelfSign.BL.Services
             var responseString = await response.Content.ReadAsStringAsync();
             return true;
         }
+
         public async Task<bool> Confirmation(string requestId)
         {
             var response = await _httpClient.PostAsync(_urls["Confirmation"].Replace("$requestId", requestId), null);
@@ -118,10 +119,24 @@ namespace SelfSign.BL.Services
             }
             return false;
         }
+        public async Task<int> GetStatus(string requestId)
+        {
+            var response = await _httpClient.GetAsync(_urls["GetHistory"].Replace("$requestId", requestId));
+            var responseString = await response.Content.ReadAsStringAsync();
+            dynamic responseObject = JsonConvert.DeserializeObject(responseString);
+            return (int)responseObject[0].StateCode;
+        }
+        public async Task<string> GetComment(string requestId)
+        {
+            var response = await _httpClient.GetAsync(_urls["GetComments"].Replace("$requestId", requestId));
+            var responseString = await response.Content.ReadAsStringAsync();
+            dynamic responseObject = JsonConvert.DeserializeObject(responseString);
+            return responseObject[0].Comment;
+        }
         public async Task<bool> SimulateConfirmation(string requestId)
         {
             var response = await _httpClient.PostAsync(_urls["SimulateConfirmation"].Replace("$requestId", requestId), null);
-            if(response.StatusCode==System.Net.HttpStatusCode.OK)
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return true;
             }

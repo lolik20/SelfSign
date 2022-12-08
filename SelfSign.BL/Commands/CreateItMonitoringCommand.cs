@@ -63,7 +63,7 @@ namespace SelfSign.BL.Commands
                     {
                         Series = user.Serial,
                         Number = user.Number,
-                        IssueDate = user.RegDate.ToString("yyyy-MM-dd"),
+                        IssueDate = user.IssueDate.ToString("yyyy-MM-dd"),
                         IssuingAuthorityCode = user.SubDivisionCode,
                         IssuingAuthorityName = user.SubDivisionAddress
                     },
@@ -73,7 +73,7 @@ namespace SelfSign.BL.Commands
                     Gender = user.Gender,
                     CitizenshipCode = 643
                 },
-                TariffId = "deac4065-0433-497d-80b8-34784f261261"
+                TariffId = "5f278abe-1ee9-4106-9bfb-bd90b8745938"
             };
             var createResponse = await _itMonitoring.CreateRequest(createRequest);
             if (!createResponse.Item1)

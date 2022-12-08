@@ -96,7 +96,7 @@ namespace SelfSign.Controllers
 
                 });
 
-                await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата http://signself.ru/{newEntity.Entity.Id}/itmonitoring");
+                //await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата http://signself.ru/{newEntity.Entity.Id}/itmonitoring");
                 _context.Requests.Add(new Request
                 {
                     VerificationCenter = request.VerificationCenter,
@@ -314,8 +314,8 @@ namespace SelfSign.Controllers
             user.Name = request.Name;
             user.Surname = request.Surname;
             user.Patronymic = request.Patronymic;
-            user.IssueDate = DateTime.Parse(request.IssueDate, CultureInfo.GetCultureInfo("ru-RU")).ToUniversalTime();
-            user.BirthDate = DateTime.Parse(request.BirthDate, CultureInfo.GetCultureInfo("ru-RU")).ToUniversalTime();
+            user.IssueDate = DateTime.Parse(request.IssueDate, CultureInfo.GetCultureInfo("ru-RU")).ToUniversalTime().AddHours(6);
+            user.BirthDate = DateTime.Parse(request.BirthDate, CultureInfo.GetCultureInfo("ru-RU")).ToUniversalTime().AddHours(6);
             user.Serial = request.Serial;
             user.Number = request.Number;
             user.RegAddress = request.RegAddress;
@@ -348,7 +348,6 @@ namespace SelfSign.Controllers
         public string Surname { get; set; }
         public string Patronymic { get; set; }
         public string Phone { get; set; }
-        public SignatureType SignatureType { get; set; }
         public VerificationCenter VerificationCenter { get; set; }
     }
     public class FirstUpdateRequest

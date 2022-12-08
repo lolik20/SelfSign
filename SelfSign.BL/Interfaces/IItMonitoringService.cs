@@ -16,5 +16,7 @@ namespace SelfSign.BL.Interfaces
         Task<dynamic> GetDocuments(string requestId);
         Task<byte[]> GetDocument(string requestId, DocumentType documentType);
         Task<bool> SimulateConfirmation(string requestId);
+        Task<int> GetStatus(string requstId);
+        Task<string> GetComment(string requestId);
     }
 }

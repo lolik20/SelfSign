@@ -43,10 +43,13 @@ namespace SelfSign.BL.Commands
                     Message = "Успешная идентификация личности"
                 };
             }
-            var documentEntity = requestEntity.Documents.First(x => x.DocumentType == Common.Entities.DocumentType.Passport);
-            var response = await _itMonitoring.UploadDocuments(requestEntity.RequestId, _fileService.GetDocument(documentEntity.FileUrl), Common.Entities.DocumentType.Passport, "passport", "jpg", "image/jpeg");
+            if (preStatus == 1)
+            {
+                var documentEntity = requestEntity.Documents.First(x => x.DocumentType == Common.Entities.DocumentType.Passport);
+                var response = await _itMonitoring.UploadDocuments(requestEntity.RequestId, _fileService.GetDocument(documentEntity.FileUrl), Common.Entities.DocumentType.Passport, "passport", "jpg", "image/jpeg");
 
-            var confirmation = await _itMonitoring.Confirmation(requestEntity.RequestId);
+                var confirmation = await _itMonitoring.Confirmation(requestEntity.RequestId);
+            }
             for (int i = 0; i < 50; i++)
             {
                 await Task.Delay(30000);

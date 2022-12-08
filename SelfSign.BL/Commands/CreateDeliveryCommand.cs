@@ -24,7 +24,7 @@ namespace SelfSign.BL.Commands
         private readonly System.Net.Http.Headers.MediaTypeHeaderValue _pdfMimeType;
         private readonly IFileService _fileService;
         private readonly IMediator _mediator;
-        public CreateDeliveryCommand(ApplicationContext context, IConfiguration configuration,HttpClient httpClient,IFileService fileService,IMediator mediator)
+        public CreateDeliveryCommand(ApplicationContext context, IConfiguration configuration, HttpClient httpClient, IFileService fileService, IMediator mediator)
         {
             _httpClient = httpClient;
             _context = context;
@@ -36,23 +36,23 @@ namespace SelfSign.BL.Commands
 
         public async Task<CreateDeliveryResponse> Handle(CreateDeliveryRequest request, CancellationToken cancellationToken)
         {
-            var user = _context.Users.Include(x => x.Requests.OrderByDescending(x=>x.Created)).ThenInclude(x => x.Documents).FirstOrDefault(x => x.Id == request.UserId);
-            if (user == null||user.Requests.Count()==0)
+            var user = _context.Users.Include(x => x.Requests.OrderByDescending(x => x.Created)).ThenInclude(x => x.Documents).FirstOrDefault(x => x.Id == request.UserId);
+            if (user == null || user.Requests.Count() == 0)
             {
                 return new CreateDeliveryResponse
                 {
                     IsSuccess = false,
-                    Message="Пользователь не найден или нет заявок"
+                    Message = "Пользователь не найден или нет заявок"
                 };
             }
             DateTime date = new DateTime();
             var isValidDate = DateTime.TryParseExact(request.DeliveryDate, "dd.MM.yyyy", CultureInfo.GetCultureInfo("ru-RU"), DateTimeStyles.None, out date);
-            if (!isValidDate)
+            if (!isValidDate || date < DateTime.Now)
             {
                 return new CreateDeliveryResponse
                 {
                     IsSuccess = false,
-                    Message="Неверная дата"
+                    Message = "Неверная дата или доставка в прошлое не в наших силах"
                 };
             }
             var cladrResponse = await _mediator.Send(new AddressRequest { query = request.Address });
@@ -60,7 +60,11 @@ namespace SelfSign.BL.Commands
             bool isValidCladr = IsValidCladr(cladr);
             if (!isValidCladr)
             {
-                return new CreateDeliveryResponse { IsSuccess = false,Message="Доставка по данному адресу невозможна" };
+                return new CreateDeliveryResponse
+                {
+                    IsSuccess = false,
+                    Message = "Доставка по данному адресу невозможна"
+                };
             }
             var requestEntity = user.Requests.OrderBy(x => x.Created).First();
             var newDeliveryEntity = _context.Deliveries.Add(new Common.Entities.Delivery
@@ -72,8 +76,8 @@ namespace SelfSign.BL.Commands
                 Time = request.Time,
                 Address = request.Address,
                 VerificationCenter = requestEntity.VerificationCenter,
-                TrackNumber = new Random().Next(0,1000000)
-            }) ;
+                TrackNumber = new Random().Next(0, 1000000)
+            });
             var formData = new MultipartFormDataContent();
             formData.Add(new StringContent(request.Address), "address");
             formData.Add(new StringContent(cladr), "cladr");
@@ -96,14 +100,14 @@ namespace SelfSign.BL.Commands
                 return new CreateDeliveryResponse
                 {
                     IsSuccess = false,
-                    Message="Ошибка при запросе доставки"
+                    Message = "Ошибка при запросе доставки"
                 };
             }
             _context.SaveChanges();
             return new CreateDeliveryResponse()
             {
                 IsSuccess = true,
-                Message=newDeliveryEntity.Entity.TrackNumber.ToString()
+                Message = newDeliveryEntity.Entity.TrackNumber.ToString()
             };
         }
         public bool IsValidCladr(string cladr)

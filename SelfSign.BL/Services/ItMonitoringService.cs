@@ -80,7 +80,13 @@ namespace SelfSign.BL.Services
         }
         public async Task<dynamic> GetDocuments(string requestId)
         {
+            start:
             var response = await _httpClient.GetAsync(_urls["Documents"].Replace("$requestId", requestId));
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await Authorize();
+                goto start;
+            }
             var responseString = await response.Content.ReadAsStringAsync();
             dynamic result = JsonConvert.DeserializeObject(responseString);
             foreach (var document in result)
@@ -91,7 +97,13 @@ namespace SelfSign.BL.Services
         }
         public async Task<byte[]?> GetDocument(string requestId, DocumentType documentType)
         {
+            start:
             var response = await _httpClient.GetAsync(_urls["GetDocument"].Replace("$requestId", requestId).Replace("$docTypeCode", $"{(int)documentType}"));
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await Authorize();
+                goto start;
+            }
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var result = await response.Content.ReadAsByteArrayAsync();
@@ -112,7 +124,13 @@ namespace SelfSign.BL.Services
 
         public async Task<bool> Confirmation(string requestId)
         {
+            start:
             var response = await _httpClient.PostAsync(_urls["Confirmation"].Replace("$requestId", requestId), null);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await Authorize();
+                goto start;
+            }
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return true;
@@ -121,21 +139,39 @@ namespace SelfSign.BL.Services
         }
         public async Task<int> GetStatus(string requestId)
         {
+            start:
             var response = await _httpClient.GetAsync(_urls["GetHistory"].Replace("$requestId", requestId));
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await Authorize();
+                goto start;
+            }
             var responseString = await response.Content.ReadAsStringAsync();
             dynamic responseObject = JsonConvert.DeserializeObject(responseString);
             return (int)responseObject[0].StateCode;
         }
         public async Task<string> GetComment(string requestId)
         {
+            start:
             var response = await _httpClient.GetAsync(_urls["GetComments"].Replace("$requestId", requestId));
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await Authorize();
+                goto start;
+            }
             var responseString = await response.Content.ReadAsStringAsync();
             dynamic responseObject = JsonConvert.DeserializeObject(responseString);
             return responseObject[0].Comment;
         }
         public async Task<bool> SimulateConfirmation(string requestId)
         {
+            start:
             var response = await _httpClient.PostAsync(_urls["SimulateConfirmation"].Replace("$requestId", requestId), null);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await Authorize();
+                goto start;
+            }
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return true;

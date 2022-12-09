@@ -73,7 +73,7 @@ namespace SelfSign.BL.Services
                 await Authorize();
                 goto start;
             }
-            if (response.StatusCode == System.Net.HttpStatusCode.Created)
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return Tuple.Create(true, (string)result);
             }

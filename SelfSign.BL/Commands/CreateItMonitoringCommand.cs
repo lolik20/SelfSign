@@ -92,7 +92,7 @@ namespace SelfSign.BL.Commands
                     Message = result.Item2
                 };
             }
-            if (result.Item2 != null)
+            if (Guid.TryParse(result.Item2,out Guid guid1))
             {
                 requestEntity.RequestId = result.Item2;
                 _context.SaveChanges();

@@ -63,6 +63,31 @@ namespace SelfSign.BL.Services
             }
             return Tuple.Create(false, errors);
         }
+        public async Task<Tuple<bool, string>> UpdateRequest(object request,string requestId)
+        {
+        start:
+            var response = await _httpClient.PostAsync(_urls["UpdateRequest"].Replace("$requestId",requestId), new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"));
+            dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await Authorize();
+                goto start;
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.Created)
+            {
+                return Tuple.Create(true, (string)result);
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                return Tuple.Create(false, (string)result.innerContent.message);
+            }
+            string errors = "";
+            foreach (var error in result?.errors)
+            {
+                errors += $"{error};";
+            }
+            return Tuple.Create(false, errors);
+        }
         public async Task<bool> TwoFactor(string requestId, object request)
         {
         start:

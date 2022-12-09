@@ -75,21 +75,29 @@ namespace SelfSign.BL.Commands
                 },
                 TariffId = "5f278abe-1ee9-4106-9bfb-bd90b8745938"
             };
-            var createResponse = await _itMonitoring.CreateRequest(createRequest);
-            if (!createResponse.Item1)
+            var result = Tuple.Create(false, "Ошибка создания заявки");
+            if (Guid.TryParse(requestEntity.RequestId, out Guid guid))
+            {
+                result = await _itMonitoring.UpdateRequest(createRequest, requestEntity.RequestId);
+            }
+            else
+            {
+                result = await _itMonitoring.CreateRequest(createRequest);
+            }
+            if (!result.Item1)
             {
                 return new CreateItMonitoringResponse
                 {
                     IsSuccessful = false,
-                    Message = createResponse.Item2
+                    Message = result.Item2
                 };
             }
-            requestEntity.RequestId = createResponse.Item2;
+            requestEntity.RequestId = result.Item2;
             _context.SaveChanges();
             return new CreateItMonitoringResponse
             {
                 IsSuccessful = true,
-                Message = createResponse.Item2
+                Message = result.Item2
             };
         }
     }

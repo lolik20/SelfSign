@@ -37,6 +37,15 @@ namespace SelfSign.BL.Commands
                 };
             }
             var requestEntity = user.Requests.First(x => x.VerificationCenter == VerificationCenter.ItMonitoring);
+            var preStatus = await _itMonitoring.GetStatus(requestEntity.RequestId);
+            if (preStatus >1)
+            {
+                return new CreateItMonitoringResponse
+                {
+                    IsSuccessful=true,
+                    Message="Проходите далее"
+                };
+            }
             var cladr = await _mediator.Send(new AddressRequest { query = user.RegAddress });
 
             var createRequest = new

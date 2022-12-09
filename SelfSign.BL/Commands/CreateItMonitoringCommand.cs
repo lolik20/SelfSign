@@ -92,8 +92,11 @@ namespace SelfSign.BL.Commands
                     Message = result.Item2
                 };
             }
-            requestEntity.RequestId = result.Item2;
-            _context.SaveChanges();
+            if (result.Item2 != null)
+            {
+                requestEntity.RequestId = result.Item2;
+                _context.SaveChanges();
+            }
             return new CreateItMonitoringResponse
             {
                 IsSuccessful = true,

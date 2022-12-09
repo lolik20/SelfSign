@@ -9,6 +9,6 @@ namespace SelfSign.Common.ResponseModels
     public class CreateItMonitoringResponse
     {
         public bool IsSuccessful { get; set; }
-        public string Message { get; set; }
+        public string? Message { get; set; }
     }
 }

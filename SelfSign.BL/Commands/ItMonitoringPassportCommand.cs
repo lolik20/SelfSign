@@ -35,7 +35,7 @@ namespace SelfSign.BL.Commands
 
             var requestEntity = user.Requests.First(x => x.VerificationCenter == Common.Entities.VerificationCenter.ItMonitoring);
             var preStatus = await _itMonitoring.GetStatus(requestEntity.RequestId);
-            if (preStatus == 4)
+            if (preStatus >= 4)
             {
                 return new ItMonitoringPassportResponse
                 {

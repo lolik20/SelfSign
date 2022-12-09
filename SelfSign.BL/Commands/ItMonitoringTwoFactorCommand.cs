@@ -25,19 +25,15 @@ namespace SelfSign.BL.Commands
 
         public async Task<ItMonitoringTwoFactorResponse> Handle(ItMonitoringTwoFactorRequest request, CancellationToken cancellationToken)
         {
-            var user = _context.Users.Include(x => x.Requests).FirstOrDefault(x => x.Id == request.Id);
-            if (user == null)
+            var user = _context.Users.Include(x => x.Requests.OrderByDescending(x => x.Created)).FirstOrDefault(x => x.Id == request.Id);
+            if (user == null||user.Requests.Count(x=>x.VerificationCenter==VerificationCenter.ItMonitoring)==0)
             {
                 return new ItMonitoringTwoFactorResponse
                 {
                     IsSuccessful = false
                 };
             }
-            var requestEntity = user.Requests.FirstOrDefault(x => x.VerificationCenter == VerificationCenter.ItMonitoring);
-            if (requestEntity == null)
-            {
-                return new ItMonitoringTwoFactorResponse { IsSuccessful = false };
-            }
+            var requestEntity = user.Requests.First(x => x.VerificationCenter == VerificationCenter.ItMonitoring);
             var requestObject = new
             {
                 Dss2fa = 2,
@@ -48,6 +44,8 @@ namespace SelfSign.BL.Commands
             {
                 return new ItMonitoringTwoFactorResponse { IsSuccessful = false };
             }
+            requestEntity.IsAuthenticated = true;
+            _context.SaveChanges();
             return new ItMonitoringTwoFactorResponse { IsSuccessful = true };
         }
     }

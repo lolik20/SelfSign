@@ -239,7 +239,7 @@ namespace SelfSign.Controllers
             var user = _context.Users.Include(x=>x.Requests.OrderByDescending(x=>x.Created)).FirstOrDefault(x => x.Id == id);
             if (user == null||user.Requests.Count(x=>x.VerificationCenter==VerificationCenter.ItMonitoring)==0)
             {
-                return NotFound();
+                return BadRequest();
             }
             return Ok(user.Requests.First().IsAuthenticated);
         }

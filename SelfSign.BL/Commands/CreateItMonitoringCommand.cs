@@ -58,8 +58,6 @@ namespace SelfSign.BL.Commands
                 },
                 Address = new
                 {
-                    City = user.BirthPlace,
-                    Value = user.RegAddress,
                     RegionCode = cladr.First().ShortKladr.ToString()
                 },
                 Owner = new

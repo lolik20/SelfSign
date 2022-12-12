@@ -55,21 +55,21 @@ namespace SelfSign.BL.Commands
             formData.Add(fileBytes, "file", request.file.FileName);
             formData.Add(new StringContent(_configuration.GetSection("Idx")["accessKey"]), "accessKey");
             formData.Add(new StringContent(_configuration.GetSection("Idx")["secretKey"]), "secretKey");
-            //var response = await _httpClient.PostAsync(_configuration.GetSection("Idx")["Urls:Passport"], formData);
-            //var responseString = await response.Content.ReadAsStringAsync();
-            //dynamic obj = JsonConvert.DeserializeObject(responseString);
+            var response = await _httpClient.PostAsync(_configuration.GetSection("Idx")["Urls:Passport"], formData);
+            var responseString = await response.Content.ReadAsStringAsync();
+            dynamic obj = JsonConvert.DeserializeObject(responseString);
             var fields = new Dictionary<string, string>();
-            //if (obj.resultCode == 0)
-            //{
-            //    foreach (var property in obj.items[0].fields)
-            //    {
-            //        var propertyPath = (string)property.Path;
-            //        var propertyName = propertyPath.Split(".")[2];
-            //        var propertyValue = (string)property.ToString();
-            //        var value = propertyValue.Split("\"")[5];
-            //        fields.Add(propertyName, value);
-            //    }
-            //}
+            if (obj.resultCode == 0)
+            {
+                foreach (var property in obj.items[0].fields)
+                {
+                    var propertyPath = (string)property.Path;
+                    var propertyName = propertyPath.Split(".")[2];
+                    var propertyValue = (string)property.ToString();
+                    var value = propertyValue.Split("\"")[5];
+                    fields.Add(propertyName, value);
+                }
+            }
             var document = user.Requests.First().Documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Passport);
             if (document != null)
             {

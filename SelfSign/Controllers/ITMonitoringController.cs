@@ -15,9 +15,11 @@ namespace SelfSign.Controllers
     {
 
         private readonly IMediator _mediator;
-        public ITMonitoringController(IMediator mediator)
+        private readonly ILogger<ITMonitoringController> _logger;
+        public ITMonitoringController(IMediator mediator, ILogger<ITMonitoringController> logger)
         {
             _mediator = mediator;
+            _logger = logger;
         }
 
 

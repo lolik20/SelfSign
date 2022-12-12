@@ -57,12 +57,12 @@ namespace SelfSign.BL.Commands
             statementPhotoEntity.Entity.FileUrl = statementPhotoUrl;
 
             var passportScanEntity = documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Passport);
-            var passportScanUrl = await _fileService.AddFile(request.PassportScan, requestEntity.User.Id, passportScanEntity.Id, "pdf");
+            var passportScanUrl = await _fileService.AddFile(request.PassportScan, requestEntity.User.Id, passportScanEntity.Id, "jpg");
             passportScanEntity.FileUrl = passportScanUrl;
             passportScanEntity.Created = DateTime.UtcNow;
 
             var statementScanEntity = documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Statement);
-            var statementScanUrl = await _fileService.AddFile(request.StatementScan, requestEntity.User.Id, statementScanEntity.Id, "pdf");
+            var statementScanUrl = await _fileService.AddFile(request.StatementScan, requestEntity.User.Id, statementScanEntity.Id, "jpg");
             statementScanEntity.FileUrl = statementScanUrl;
             statementScanEntity.Created = DateTime.UtcNow;
             _context.SaveChanges();
@@ -74,10 +74,10 @@ namespace SelfSign.BL.Commands
                     if (isUploaded)
                     {
                         var isConfirmed = await _itMonitoring.Confirmation(requestEntity.RequestId);
-                        if (isConfirmed)
-                        {
-                            await _itMonitoring.SimulateConfirmation(requestEntity.RequestId);
-                        }
+                        //if (isConfirmed)
+                        //{
+                        //    await _itMonitoring.SimulateConfirmation(requestEntity.RequestId);
+                        //}
                     }
 
                     break;

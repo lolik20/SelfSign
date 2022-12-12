@@ -47,14 +47,14 @@ namespace SelfSign.BL.Commands
             }
             var documents = _context.Documents.Where(x => x.RequestId == requestEntity.Id);
 
-            var statementPhotoEntity = _context.Documents.Add(new Common.Entities.Document
-            {
-                Created = DateTime.UtcNow,
-                DocumentType = Common.Entities.DocumentType.PhotoWithStatement,
-                RequestId = requestEntity.Id
-            });
-            var statementPhotoUrl = await _fileService.AddFile(request.StatementPhoto, requestEntity.User.Id, statementPhotoEntity.Entity.Id, "jpg");
-            statementPhotoEntity.Entity.FileUrl = statementPhotoUrl;
+            //var statementPhotoEntity = _context.Documents.Add(new Common.Entities.Document
+            //{
+            //    Created = DateTime.UtcNow,
+            //    DocumentType = Common.Entities.DocumentType.PhotoWithStatement,
+            //    RequestId = requestEntity.Id
+            //});
+            //var statementPhotoUrl = await _fileService.AddFile(request.StatementPhoto, requestEntity.User.Id, statementPhotoEntity.Entity.Id, "jpg");
+            //statementPhotoEntity.Entity.FileUrl = statementPhotoUrl;
 
             var passportScanEntity = documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Passport);
             var passportScanUrl = await _fileService.AddFile(request.PassportScan, requestEntity.User.Id, passportScanEntity.Id, "jpg");
@@ -70,8 +70,9 @@ namespace SelfSign.BL.Commands
             {
                 case Common.Entities.VerificationCenter.ItMonitoring:
 
-                    var isUploaded = await _itMonitoring.UploadDocuments(requestEntity.RequestId, _fileService.FromFile(request.StatementScan), Common.Entities.DocumentType.Statement, "statementScan", "pdf", "application/pdf");
-                    if (isUploaded)
+                    var isStatement = await _itMonitoring.UploadDocuments(requestEntity.RequestId, _fileService.FromFile(request.StatementScan), Common.Entities.DocumentType.Statement, "statementScan", "jpg", "image/jpeg");
+                    var isPassport = await _itMonitoring.UploadDocuments(requestEntity.RequestId, _fileService.FromFile(request.StatementScan), Common.Entities.DocumentType.Passport, "passport", "jpg", "image/jpeg");
+                    if (isStatement && isPassport)
                     {
                         var isConfirmed = await _itMonitoring.Confirmation(requestEntity.RequestId);
                         //if (isConfirmed)

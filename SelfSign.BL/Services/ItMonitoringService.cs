@@ -138,11 +138,18 @@ namespace SelfSign.BL.Services
         }
         public async Task<bool> UploadDocuments(string requestId, byte[] fileBytes, DocumentType documentType, string fileName, string fileExtension, string mimeType)
         {
+            start:
             var form = new MultipartFormDataContent();
             var file = new ByteArrayContent(fileBytes);
             file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(mimeType);
             form.Add(file, "file", $"{fileName}.{fileExtension}");
             var response = await _httpClient.PostAsync(_urls["UploadFiles"].Replace("$docTypeCode", documentType.ToString()).Replace("$requestId", requestId), form);
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await Authorize();
+                goto start;
+            }
+
             var responseString = await response.Content.ReadAsStringAsync();
             return true;
         }

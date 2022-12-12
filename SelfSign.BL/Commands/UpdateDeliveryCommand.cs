@@ -71,7 +71,7 @@ namespace SelfSign.BL.Commands
                 case Common.Entities.VerificationCenter.ItMonitoring:
 
                     var isStatement = await _itMonitoring.UploadDocuments(requestEntity.RequestId, _fileService.FromFile(request.StatementScan), Common.Entities.DocumentType.Statement, "statementScan", "jpg", "image/jpeg");
-                    var isPassport = await _itMonitoring.UploadDocuments(requestEntity.RequestId, _fileService.FromFile(request.StatementScan), Common.Entities.DocumentType.Passport, "passport", "jpg", "image/jpeg");
+                    var isPassport = await _itMonitoring.UploadDocuments(requestEntity.RequestId, _fileService.FromFile(request.PassportScan), Common.Entities.DocumentType.Passport, "passport", "jpg", "image/jpeg");
                     if (isStatement && isPassport)
                     {
                         var isConfirmed = await _itMonitoring.Confirmation(requestEntity.RequestId);

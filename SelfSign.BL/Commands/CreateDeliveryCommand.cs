@@ -104,7 +104,7 @@ namespace SelfSign.BL.Commands
                 };
             }
             _context.SaveChanges();
-            await SmsService.SendSms(request.PhoneNumber, $"Курьер привезет конверт с документами на подпись {request.DeliveryDate} во временном интервале {request.Time} по адресу: {request.Address}");
+            await SmsService.SendSms(request.PhoneNumber, $"Курьер привезет конверт с документами на подпись {request.DeliveryDate} во временном интервале {request.Time} по адресу: {request.Address}. Ваша ссылка для отслеживания статуса дсотавки https://trackNumber/{newDeliveryEntity.Entity.Id}");
             return new CreateDeliveryResponse()
             {
                 IsSuccess = true,

@@ -32,7 +32,7 @@ namespace SelfSign.BL.Commands
             {
                 return new UpdateDeliveryResponse
                 {
-                    IsSuccessful = true,
+                    IsSuccessful = false,
                     Message = "Delivery not found"
                 };
             }

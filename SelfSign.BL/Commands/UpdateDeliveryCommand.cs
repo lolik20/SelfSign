@@ -27,7 +27,7 @@ namespace SelfSign.BL.Commands
 
         public async Task<UpdateDeliveryResponse> Handle(UpdateDeliveryRequest request, CancellationToken cancellationToken)
         {
-            var deliveryEntity = _context.Deliveries.Include(x => x.Request).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == request.DeliveryId);
+            var deliveryEntity = _context.Deliveries.Include(x => x.Request).ThenInclude(x => x.User).FirstOrDefault(x => x.Id == request.Id);
             if (deliveryEntity == null)
             {
                 return new UpdateDeliveryResponse

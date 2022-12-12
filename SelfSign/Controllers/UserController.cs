@@ -196,6 +196,7 @@ namespace SelfSign.Controllers
                 date = delivery.DeliveryDate.ToString("dd.MM.yyyy"),
                 time = delivery.Time,
                 address = delivery.Address,
+                status =(int) delivery.Status
 
             });
         }

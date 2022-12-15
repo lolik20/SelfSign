@@ -21,7 +21,7 @@ namespace SelfSign.BL.Services
         public async Task<string> AddFile(IFormFile file, Guid userId, Guid fileId, string type)
         {
 
-            string filesDirectory = $"/home/appuser/documents/{userId}";
+            string filesDirectory = $"/home/selfsign/documents/{userId}";
 
 
             string directory = _client.WorkingDirectory;
@@ -52,7 +52,7 @@ namespace SelfSign.BL.Services
         public async Task<string> AddFile(byte[] file, Guid userId, Guid fileId, string type)
         {
 
-            string filesDirectory = $"/home/appuser/documents/{userId}";
+            string filesDirectory = $"/home/selfsign/documents/{userId}";
 
             string directory = _client.WorkingDirectory;
             filesDirectory = filesDirectory.Replace("-", "");

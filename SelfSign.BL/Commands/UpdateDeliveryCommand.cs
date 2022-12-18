@@ -18,11 +18,13 @@ namespace SelfSign.BL.Commands
         private readonly ApplicationContext _context;
         private readonly IFileService _fileService;
         private readonly IItMonitoringService _itMonitoring;
-        public UpdateDeliveryCommand(ApplicationContext context, IFileService fileService, IItMonitoringService itMonitoring)
+        private readonly IHistoryService _historyService;
+        public UpdateDeliveryCommand(ApplicationContext context, IFileService fileService, IItMonitoringService itMonitoring, IHistoryService historyService)
         {
             _context = context;
             _fileService = fileService;
             _itMonitoring = itMonitoring;
+            _historyService = historyService;
         }
 
         public async Task<UpdateDeliveryResponse> Handle(UpdateDeliveryRequest request, CancellationToken cancellationToken)
@@ -84,7 +86,9 @@ namespace SelfSign.BL.Commands
                     break;
             }
             deliveryEntity.Status = Common.Entities.DeliveryStatus.Completed;
+            await _historyService.AddHistory(requestEntity.Id,"Прикрепление документов курьерами");
             _context.SaveChanges();
+            
             return new UpdateDeliveryResponse { IsSuccessful = true, Message = "Documents updated" };
         }
     }

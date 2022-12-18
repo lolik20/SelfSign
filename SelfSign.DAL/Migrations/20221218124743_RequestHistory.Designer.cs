@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SelfSign.DAL;
@@ -11,9 +12,10 @@ using SelfSign.DAL;
 namespace SelfSign.DAL.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20221218124743_RequestHistory")]
+    partial class RequestHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,7 +39,6 @@ namespace SelfSign.DAL.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("DeliveryDate")
@@ -73,7 +74,6 @@ namespace SelfSign.DAL.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("DocumentType")
@@ -99,10 +99,6 @@ namespace SelfSign.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Event")
                         .IsRequired()
                         .HasColumnType("text");
@@ -124,7 +120,6 @@ namespace SelfSign.DAL.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsAuthenticated")
@@ -199,7 +194,6 @@ namespace SelfSign.DAL.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("RegDate")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Serial")
@@ -225,28 +219,6 @@ namespace SelfSign.DAL.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("SelfSign.Common.Entities.UserData", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserData");
                 });
 
             modelBuilder.Entity("SelfSign.Common.Entities.Delivery", b =>

@@ -17,10 +17,12 @@ namespace SelfSign.BL.Commands
     {
         private readonly ApplicationContext _context;
         private readonly IItMonitoringService _itMonitoring;
-        public ItMonitoringTwoFactorCommand(ApplicationContext context, IItMonitoringService itMonitoring)
+        private readonly IHistoryService _historyService;
+        public ItMonitoringTwoFactorCommand(ApplicationContext context, IItMonitoringService itMonitoring, IHistoryService historyService)
         {
             _context = context;
             _itMonitoring = itMonitoring;
+            _historyService = historyService;
         }
 
         public async Task<ItMonitoringTwoFactorResponse> Handle(ItMonitoringTwoFactorRequest request, CancellationToken cancellationToken)
@@ -44,6 +46,7 @@ namespace SelfSign.BL.Commands
             {
                 return new ItMonitoringTwoFactorResponse { IsSuccessful = false };
             }
+            await _historyService.AddHistory(requestEntity.Id, "Подключение 2FA в приложении");
             requestEntity.IsAuthenticated = true;
             _context.SaveChanges();
             return new ItMonitoringTwoFactorResponse { IsSuccessful = true };

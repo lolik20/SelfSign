@@ -10,6 +10,7 @@ namespace SelfSign.Common.Entities
         public Request Request{ get; set; }
         public DocumentType DocumentType { get; set; }
         public string FileUrl { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime Created { get; set; }
     }
 }

@@ -13,11 +13,13 @@ namespace SelfSign.BL.Commands
         private readonly ApplicationContext _context;
         private readonly IItMonitoringService _itMonitoring;
         private readonly IFileService _fileService;
-        public ItMonitoringPassportCommand(ApplicationContext context, IItMonitoringService itMonitoring, IFileService fileService)
+        private readonly IHistoryService _historyService;
+        public ItMonitoringPassportCommand(ApplicationContext context, IItMonitoringService itMonitoring, IFileService fileService, IHistoryService historyService)
         {
             _context = context;
             _itMonitoring = itMonitoring;
             _fileService = fileService;
+            _historyService = historyService;
         }
 
         public async Task<ItMonitoringPassportResponse> Handle(ItMonitoringPassportRequest request, CancellationToken cancellationToken)
@@ -47,8 +49,8 @@ namespace SelfSign.BL.Commands
             {
                 var documentEntity = requestEntity.Documents.First(x => x.DocumentType == Common.Entities.DocumentType.Passport);
                 var response = await _itMonitoring.UploadDocuments(requestEntity.RequestId, _fileService.GetDocument(documentEntity.FileUrl), Common.Entities.DocumentType.Passport, "passport", "jpg", "image/jpeg");
-
                 var confirmation = await _itMonitoring.Confirmation(requestEntity.RequestId);
+                await _historyService.AddHistory(requestEntity.Id, "Загрузка паспорта в УЦ");
             }
             for (int i = 0; i < 50; i++)
             {
@@ -56,6 +58,8 @@ namespace SelfSign.BL.Commands
                 var status = await _itMonitoring.GetStatus(requestEntity.RequestId);
                 if (status == 4)
                 {
+                    await _historyService.AddHistory(requestEntity.Id, "Успешная идентификация паспорта");
+                    _context.SaveChanges();
                     return new ItMonitoringPassportResponse
                     {
                         IsSuccessful = true,
@@ -65,6 +69,8 @@ namespace SelfSign.BL.Commands
                 if (status == 1)
                 {
                     var comment = await _itMonitoring.GetComment(requestEntity.RequestId);
+                    await _historyService.AddHistory(requestEntity.Id, $"Идентификация личности не пройдена: {comment}");
+                    _context.SaveChanges();
                     return new ItMonitoringPassportResponse
                     {
                         IsSuccessful = false,

@@ -24,7 +24,8 @@ namespace SelfSign.BL.Commands
         private readonly System.Net.Http.Headers.MediaTypeHeaderValue _pdfMimeType;
         private readonly IFileService _fileService;
         private readonly IMediator _mediator;
-        public CreateDeliveryCommand(ApplicationContext context, IConfiguration configuration, HttpClient httpClient, IFileService fileService, IMediator mediator)
+        private readonly IHistoryService _historyService;
+        public CreateDeliveryCommand(ApplicationContext context, IConfiguration configuration, HttpClient httpClient, IFileService fileService, IMediator mediator, IHistoryService historyService)
         {
             _httpClient = httpClient;
             _context = context;
@@ -32,6 +33,7 @@ namespace SelfSign.BL.Commands
             _pdfMimeType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/pdf");
             _fileService = fileService;
             _mediator = mediator;
+            _historyService = historyService;
         }
 
         public async Task<CreateDeliveryResponse> Handle(CreateDeliveryRequest request, CancellationToken cancellationToken)
@@ -103,6 +105,7 @@ namespace SelfSign.BL.Commands
                     Message = "Ошибка при запросе доставки"
                 };
             }
+            await _historyService.AddHistory(requestEntity.Id, "Создание заявки на доставку");
             _context.SaveChanges();
             await SmsService.SendSms(request.PhoneNumber, $"Курьер привезет конверт с документами на подпись {request.DeliveryDate} во временном интервале {request.Time} по адресу: {request.Address}. Ваша ссылка для отслеживания статуса доставки https://signself.ru/trackNumber/{newDeliveryEntity.Entity.TrackNumber}");
             return new CreateDeliveryResponse()

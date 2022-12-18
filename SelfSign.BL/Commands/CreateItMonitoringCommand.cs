@@ -19,11 +19,13 @@ namespace SelfSign.BL.Commands
         private readonly IItMonitoringService _itMonitoring;
         private readonly ApplicationContext _context;
         private readonly IMediator _mediator;
-        public CreateItMonitoringCommand(ApplicationContext context, IItMonitoringService itMonitoring, IMediator mediator)
+        private readonly IHistoryService _historyService;
+        public CreateItMonitoringCommand(ApplicationContext context, IItMonitoringService itMonitoring, IMediator mediator, IHistoryService historyService)
         {
             _context = context;
             _itMonitoring = itMonitoring;
             _mediator = mediator;
+            _historyService = historyService;
         }
         public async Task<CreateItMonitoringResponse> Handle(CreateItMonitoringRequest request, CancellationToken cancellationToken)
         {
@@ -38,12 +40,12 @@ namespace SelfSign.BL.Commands
             }
             var requestEntity = user.Requests.First(x => x.VerificationCenter == VerificationCenter.ItMonitoring);
             var preStatus = await _itMonitoring.GetStatus(requestEntity.RequestId);
-            if (preStatus >1)
+            if (preStatus > 1)
             {
                 return new CreateItMonitoringResponse
                 {
-                    IsSuccessful=true,
-                    Message="Проходите далее"
+                    IsSuccessful = true,
+                    Message = "Проходите далее"
                 };
             }
             var cladr = await _mediator.Send(new AddressRequest { query = user.RegAddress });
@@ -86,10 +88,13 @@ namespace SelfSign.BL.Commands
             if (Guid.TryParse(requestEntity.RequestId, out Guid guid))
             {
                 result = await _itMonitoring.UpdateRequest(createRequest, requestEntity.RequestId);
+                await _historyService.AddHistory(requestEntity.Id, "Обновление данных заявки");
             }
             else
             {
                 result = await _itMonitoring.CreateRequest(createRequest);
+                await _historyService.AddHistory(requestEntity.Id, "Создание заявки");
+
             }
             if (!result.Item1)
             {
@@ -99,7 +104,7 @@ namespace SelfSign.BL.Commands
                     Message = result.Item2
                 };
             }
-            if (Guid.TryParse(result.Item2,out Guid guid1))
+            if (Guid.TryParse(result.Item2, out Guid guid1))
             {
                 requestEntity.RequestId = result.Item2;
                 _context.SaveChanges();

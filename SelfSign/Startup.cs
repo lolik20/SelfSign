@@ -1,26 +1,45 @@
 
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using Microsoft.IdentityModel.Tokens;
 using SelfSign.BL.Commands;
 using SelfSign.BL.Interfaces;
 using SelfSign.BL.Queries;
 using SelfSign.BL.Services;
 using SelfSign.DAL;
 using System.Reflection;
+using System.Text;
 
 namespace SelfSign
 {
     public class Startup
     {
+        public IConfiguration Configuration { get; }
+        public  static IConfigurationSection JwtSection { get; set; }
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            JwtSection = configuration.GetSection("Jwt");
         }
-        public IConfiguration Configuration { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidIssuer = JwtSection["Issuer"],
+                    ValidateAudience = false,
+                    ValidAudience = JwtSection["Audience"],
+                    ValidateLifetime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtSection["Key"])),
+                    ValidateIssuerSigningKey = true,
+                };
+
+            });
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
@@ -34,6 +53,7 @@ namespace SelfSign
             services.AddMediatR(typeof(CreateSignMeCommand).GetTypeInfo().Assembly);
             services.AddMediatR(typeof(CreateItMonitoringCommand).GetTypeInfo().Assembly);
             services.AddSingleton<IItMonitoringService, ItMonitoringService>();
+            services.AddTransient<IHistoryService, HistoryService>();
             services.AddSingleton<IFileService, FileService>();
             services.AddHttpClient();
 
@@ -41,6 +61,9 @@ namespace SelfSign
 
 
             services.AddHttpClient("SignMe").SetHandlerLifetime(TimeSpan.FromDays(1));
+            services.AddHttpClient("ItMonitoring", httpClient =>
+            {
+            });
             services.AddHttpClient("Dadata", httpClient =>
             {
                 httpClient.DefaultRequestHeaders.Add("X-Secret", Configuration.GetSection("Dadata")["Secret"]);
@@ -68,9 +91,10 @@ x.UseNpgsql(Configuration.GetConnectionString("Database")));
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseCors(x=>x.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader());
+            app.UseCors(x => x.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader());
 
             app.UseEndpoints(endpoints =>
             {

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SelfSign.DAL;
@@ -11,9 +12,10 @@ using SelfSign.DAL;
 namespace SelfSign.DAL.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20221218124641_UserHistory")]
+    partial class UserHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,7 +39,6 @@ namespace SelfSign.DAL.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("DeliveryDate")
@@ -73,7 +74,6 @@ namespace SelfSign.DAL.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("DocumentType")
@@ -99,20 +99,16 @@ namespace SelfSign.DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("Event")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("RequestId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RequestId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("History");
                 });
@@ -124,7 +120,6 @@ namespace SelfSign.DAL.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("IsAuthenticated")
@@ -199,7 +194,6 @@ namespace SelfSign.DAL.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("RegDate")
-                        .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Serial")
@@ -227,28 +221,6 @@ namespace SelfSign.DAL.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("SelfSign.Common.Entities.UserData", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserData");
-                });
-
             modelBuilder.Entity("SelfSign.Common.Entities.Delivery", b =>
                 {
                     b.HasOne("SelfSign.Common.Entities.Request", "Request")
@@ -273,13 +245,13 @@ namespace SelfSign.DAL.Migrations
 
             modelBuilder.Entity("SelfSign.Common.Entities.History", b =>
                 {
-                    b.HasOne("SelfSign.Common.Entities.Request", "Request")
+                    b.HasOne("SelfSign.Common.Entities.User", "User")
                         .WithMany("History")
-                        .HasForeignKey("RequestId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Request");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SelfSign.Common.Entities.Request", b =>
@@ -298,12 +270,12 @@ namespace SelfSign.DAL.Migrations
                     b.Navigation("Deliveries");
 
                     b.Navigation("Documents");
-
-                    b.Navigation("History");
                 });
 
             modelBuilder.Entity("SelfSign.Common.Entities.User", b =>
                 {
+                    b.Navigation("History");
+
                     b.Navigation("Requests");
                 });
 #pragma warning restore 612, 618

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SelfSign.BL.Interfaces;
@@ -48,6 +49,7 @@ namespace SelfSign.Controllers
             });
         }
 
+        [Authorize(Roles="Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {

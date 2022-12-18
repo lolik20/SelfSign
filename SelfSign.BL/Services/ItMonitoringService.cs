@@ -20,7 +20,7 @@ namespace SelfSign.BL.Services
             _httpClient = httpClient;
             _configuration = configuration;
             _urls = _configuration.GetSection("ItMonitoring").GetSection("Urls");
-            Authorize().ConfigureAwait(true);
+            Authorize().GetAwaiter().GetResult();
         }
         private async Task Authorize()
         {
@@ -42,7 +42,11 @@ namespace SelfSign.BL.Services
         {
         start:
             var response = await _httpClient.PostAsync(_urls["CreateRequest"], new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json"));
-            dynamic result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+            dynamic? result = JsonConvert.DeserializeObject(await response.Content.ReadAsStringAsync());
+            if (result == null)
+            {
+                return Tuple.Create(false, "Ответ null");
+            }
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 await Authorize();

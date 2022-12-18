@@ -7,20 +7,14 @@ using System.Threading.Tasks;
 
 namespace SelfSign.Common.Entities
 {
-    public class Delivery
+    public class History
     {
         public Guid Id { get; set; }
+        public string Event { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime Created { get; set; }
-        public DateTime DeliveryDate { get; set; }
-        public string Time { get; set; }
-        public string Cladr { get; set; }
-        public string Address { get; set; }
         [ForeignKey("Request")]
         public Guid RequestId { get; set; }
         public Request Request { get; set; }
-        public DeliveryStatus Status { get; set; }
-        public int TrackNumber { get; set; }
-        public VerificationCenter VerificationCenter { get; set; }
     }
 }

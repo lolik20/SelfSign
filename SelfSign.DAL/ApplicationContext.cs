@@ -16,5 +16,7 @@ namespace SelfSign.DAL
         public DbSet<Document> Documents { get; set; }
         public DbSet<Request> Requests { get; set; }
         public DbSet<Delivery> Deliveries { get; set; }
+        public DbSet<History> History { get; set; }
+        public DbSet<UserData> UserData { get; set; }
     }
 }

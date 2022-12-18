@@ -81,16 +81,19 @@ namespace SelfSign.BL.Services
 
         public byte[] GetDocument(string path)
         {
-
-
             var stream = new MemoryStream();
             _client.DownloadFile(path, stream);
             byte[] result = stream.ToArray();
             return result;
-
-
         }
-        
+        public string GetBase64(string path)
+        {
+            var stream = new MemoryStream();
+            _client.DownloadFile(path, stream);
+            byte[] array = stream.ToArray();
+            var result = Convert.ToBase64String(array);
+            return result;
+        }
         public byte[] FromFile(IFormFile formFile)
         {
             long length = formFile.Length;

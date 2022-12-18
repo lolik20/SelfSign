@@ -13,5 +13,6 @@ namespace SelfSign.BL.Interfaces
         Task<string> AddFile(byte[] file, Guid userId, Guid fileId, string type);
         byte[] GetDocument(string path);
         byte[] FromFile(IFormFile formFile);
+        public string GetBase64(string path);
     }
 }

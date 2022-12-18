@@ -1,4 +1,6 @@
-﻿namespace SelfSign.Common.Entities
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace SelfSign.Common.Entities
 {
     public class User
     {
@@ -6,6 +8,7 @@
         public string Name { get; set; }
         public string Surname { get; set; }
         public string Patronymic { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime RegDate { get; set; }
         public string Serial { get; set; }
         public string Number { get; set; }

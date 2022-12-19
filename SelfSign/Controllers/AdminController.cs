@@ -23,6 +23,7 @@ namespace SelfSign.Controllers
             _itMonitoring = itMonitoring;
             _configuration = configuration;
         }
+        [Authorize(Roles = "Admin")]
         [HttpGet("document")]
         public async Task<IActionResult> GetDocument([FromQuery] Guid id)
         {

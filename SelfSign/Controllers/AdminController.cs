@@ -24,7 +24,7 @@ namespace SelfSign.Controllers
             _itMonitoring = itMonitoring;
             _configuration = configuration;
         }
-       
+
         [Authorize(Roles = "Admin")]
         [HttpGet("document")]
         public async Task<IActionResult> GetDocument([FromQuery] Guid id)
@@ -41,7 +41,7 @@ namespace SelfSign.Controllers
                 base64 = result
             });
         }
-        [Authorize(Roles ="Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers()
         {
@@ -64,15 +64,15 @@ namespace SelfSign.Controllers
             }).ToList();
             return Ok(result);
         }
-        [HttpGet("login")]
-        public async Task<IActionResult> Login(string username, string password)
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var user = _context.UserData.FirstOrDefault(x => x.UserName == username);   
+            var user = _context.UserData.FirstOrDefault(x => x.UserName == request.Username);
             if (user == null)
             {
                 return NotFound();
             }
-            var isValid = Argon2.Verify(user.PasswordHash, password, _configuration.GetSection("Argon")["Key"]);
+            var isValid = Argon2.Verify(user.PasswordHash, request.Password, _configuration.GetSection("Argon")["Key"]);
             if (isValid)
             {
                 var token = Jwt.GetToken(user.Id, user.Role);
@@ -141,5 +141,10 @@ namespace SelfSign.Controllers
             };
             return Ok(result);
         }
+    }
+    public class LoginRequest
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
     }
 }

@@ -8,6 +8,7 @@ using SelfSign.Common.Entities;
 using SelfSign.Common.RequestModels;
 using SelfSign.DAL;
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace SelfSign.Controllers
@@ -20,15 +21,14 @@ namespace SelfSign.Controllers
         private readonly IConfiguration _configuration;
         private readonly IConfigurationSection _regex;
         private readonly IMediator _mediator;
-        private readonly IFileService _fileService;
-        public UserController(ApplicationContext context, IConfiguration configuration, IMediator mediator, IFileService fileService)
+        public UserController(ApplicationContext context, IConfiguration configuration, IMediator mediator, IFileService fileService, IEncryptionService encryptionService)
         {
             _context = context;
             _configuration = configuration;
             _regex = _configuration.GetSection("regex");
             _mediator = mediator;
-            _fileService = fileService;
         }
+        
         [HttpGet]
         public async Task<IActionResult> GetUser([FromQuery] Guid id)
         {
@@ -42,14 +42,14 @@ namespace SelfSign.Controllers
                 Name = user.Name,
                 Surname = user.Surname,
                 Patronymic = user.Patronymic,
-                SignatureType =(int)user.Requests.First().VerificationCenter,
-                Id=user.Id,
-                Email=user.Email,
-                Phone =user.Phone,
+                SignatureType = (int)user.Requests.First().VerificationCenter,
+                Id = user.Id,
+                Email = user.Email,
+                Phone = user.Phone,
             });
         }
 
-        [Authorize(Roles="Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
         {
@@ -83,17 +83,17 @@ namespace SelfSign.Controllers
                     BirthDate = DateTime.Now.ToUniversalTime(),
                     RegDate = DateTime.Now.ToUniversalTime(),
                     IssueDate = DateTime.Now.ToUniversalTime(),
-                    Serial = "",
-                    SubDivisionAddress = "",
-                    SubDivisionCode = "",
-                    BirthPlace = "",
-                    Email = "",
+                    Serial = "-",
+                    SubDivisionAddress = "-",
+                    SubDivisionCode = "-",
+                    BirthPlace = "-",
+                    Email = "-",
                     Gender = new Gender(),
-                    Inn = "",
-                    Number = "",
-                    RegAddress = "",
-                    Snils = "",
-                    Citizenship = "",
+                    Inn = "-",
+                    Number = "-",
+                    RegAddress = "-",
+                    Snils = "-",
+                    Citizenship = "-",
 
 
                 });
@@ -198,7 +198,7 @@ namespace SelfSign.Controllers
                 date = delivery.DeliveryDate.ToString("dd.MM.yyyy"),
                 time = delivery.Time,
                 address = delivery.Address,
-                status =(int) delivery.Status
+                status = (int)delivery.Status
 
             });
         }
@@ -237,10 +237,10 @@ namespace SelfSign.Controllers
             return Ok();
         }
         [HttpGet("2fa")]
-        public async Task<IActionResult> Is2fa([FromQuery]Guid id)
+        public async Task<IActionResult> Is2fa([FromQuery] Guid id)
         {
-            var user = _context.Users.Include(x=>x.Requests.OrderByDescending(x=>x.Created)).FirstOrDefault(x => x.Id == id);
-            if (user == null||user.Requests.Count(x=>x.VerificationCenter==VerificationCenter.ItMonitoring)==0)
+            var user = _context.Users.Include(x => x.Requests.OrderByDescending(x => x.Created)).FirstOrDefault(x => x.Id == id);
+            if (user == null || user.Requests.Count(x => x.VerificationCenter == VerificationCenter.ItMonitoring) == 0)
             {
                 return BadRequest();
             }
@@ -405,6 +405,9 @@ namespace SelfSign.Controllers
         public Guid Id { get; set; }
         public string Snils { get; set; }
     }
-
+    public class TestRequest
+    {
+        public string base64 { get; set; }
+    }
 
 }

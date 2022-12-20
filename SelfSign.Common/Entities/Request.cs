@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace SelfSign.Common.Entities
 {
@@ -6,10 +7,10 @@ namespace SelfSign.Common.Entities
     {
         public Guid Id { get; set; }
         public VerificationCenter VerificationCenter { get; set; }
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime Created { get; set; }
         [ForeignKey("User")]
         public Guid UserId { get; set; }
+        [Encrypted]
         public string RequestId { get; set; }
         public User User { get; set; }
         public bool IsAuthenticated { get; set; }

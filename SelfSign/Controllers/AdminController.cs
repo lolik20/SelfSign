@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SelfSign.BL.Interfaces;
+using SelfSign.Common.Entities;
 using SelfSign.DAL;
 using SelfSign.Utils;
 
@@ -23,6 +24,7 @@ namespace SelfSign.Controllers
             _itMonitoring = itMonitoring;
             _configuration = configuration;
         }
+       
         [Authorize(Roles = "Admin")]
         [HttpGet("document")]
         public async Task<IActionResult> GetDocument([FromQuery] Guid id)

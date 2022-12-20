@@ -20,8 +20,8 @@ namespace SelfSign.BL.Services
         {
             var request = _context.Requests.FirstOrDefault(x => x.Id == requestId);
             if (request == null) return false;
-            _context.History.Add(new Common.Entities.History { RequestId = requestId, Event = _event });
-            throw new NotImplementedException();
+            _context.History.Add(new Common.Entities.History { RequestId = requestId, Event = _event,Created=DateTime.UtcNow });
+            return true;
         }
     }
 }

@@ -78,7 +78,8 @@ namespace SelfSign.BL.Commands
                 Time = request.Time,
                 Address = request.Address,
                 VerificationCenter = requestEntity.VerificationCenter,
-                TrackNumber = new Random().Next(0, 1000000)
+                TrackNumber = new Random().Next(0, 1000000),
+                PhoneNumber=request.PhoneNumber
             });
             var formData = new MultipartFormDataContent();
             formData.Add(new StringContent(request.Address), "address");

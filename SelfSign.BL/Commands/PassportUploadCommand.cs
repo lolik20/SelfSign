@@ -22,17 +22,19 @@ namespace SelfSign.BL.Commands
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly IFileService _fileService;
-        public PassportUploadCommand(ApplicationContext context, IConfiguration configuration, HttpClient httpClient, IFileService fileService)
+        private readonly IHistoryService _historyService;
+        public PassportUploadCommand(ApplicationContext context, IConfiguration configuration, HttpClient httpClient, IFileService fileService, IHistoryService historyService)
         {
             _context = context;
             _configuration = configuration;
             _httpClient = httpClient;
             _fileService = fileService;
+            _historyService = historyService;
         }
 
         public async Task<PassportUploadResponse> Handle(PassportUploadRequest request, CancellationToken cancellationToken)
         {
-            var user = _context.Users.Include(x => x.Requests.OrderBy(x => x.Created)).ThenInclude(x => x.Documents).FirstOrDefault(x => x.Id == request.Id);
+            var user = _context.Users.Include(x => x.Requests.OrderByDescending(x => x.Created)).ThenInclude(x => x.Documents).FirstOrDefault(x => x.Id == request.Id);
             if (user == null)
             {
                 return new PassportUploadResponse { IsSuccess = false };
@@ -77,6 +79,7 @@ namespace SelfSign.BL.Commands
                 document.FileUrl = documentUrl;
                 document.Created = DateTime.UtcNow;
                 document.DocumentType = Common.Entities.DocumentType.Passport;
+               await _historyService.AddHistory(user.Requests.First().Id, "Обновление паспорта");
             }
             if (document == null)
             {
@@ -84,11 +87,14 @@ namespace SelfSign.BL.Commands
                 {
                     Created = DateTime.UtcNow,
                     RequestId = user.Requests.First().Id,
-                    DocumentType = Common.Entities.DocumentType.Passport
+                    DocumentType = Common.Entities.DocumentType.Passport,
                 });
                 var documentUrl = await _fileService.AddFile(request.file, user.Id, newDocument.Entity.Id, "jpg");
                 newDocument.Entity.FileUrl = documentUrl;
+                await _historyService.AddHistory(user.Requests.First().Id, "Загрузка паспорта");
+
             }
+
             _context.SaveChanges();
             return new PassportUploadResponse
             {

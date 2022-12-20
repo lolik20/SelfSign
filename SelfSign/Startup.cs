@@ -16,7 +16,7 @@ namespace SelfSign
     public class Startup
     {
         public IConfiguration Configuration { get; }
-        public  static IConfigurationSection JwtSection { get; set; }
+        public static IConfigurationSection JwtSection { get; set; }
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -54,6 +54,7 @@ namespace SelfSign
             services.AddMediatR(typeof(CreateItMonitoringCommand).GetTypeInfo().Assembly);
             services.AddSingleton<IItMonitoringService, ItMonitoringService>();
             services.AddTransient<IHistoryService, HistoryService>();
+            services.AddSingleton<IEncryptionService, EncryptionService>();
             services.AddSingleton<IFileService, FileService>();
             services.AddHttpClient();
 

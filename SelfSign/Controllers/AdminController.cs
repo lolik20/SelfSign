@@ -76,7 +76,7 @@ namespace SelfSign.Controllers
             if (isValid)
             {
                 var token = Jwt.GetToken(user.Id, user.Role);
-                return Ok(token);
+                return Ok(token.ToString());
             }
             return NotFound();
         }

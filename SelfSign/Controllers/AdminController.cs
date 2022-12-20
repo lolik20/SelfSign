@@ -37,7 +37,7 @@ namespace SelfSign.Controllers
             var result = _fileService.GetBase64(document.FileUrl);
             return Ok(new
             {
-                type = document.FileUrl.Split(".")[1] == "jpg" ? "image/jpeg" : "application/pdf",
+                type = document.FileUrl.Contains(".jpg") ? "image/jpeg" : "application/pdf",
                 base64 = result
             });
         }

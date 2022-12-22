@@ -71,7 +71,6 @@ namespace SelfSign.Controllers
             formData.Add(new StringContent("innMy"), "c");
             formData.Add(new StringContent(""), "captcha");
             formData.Add(new StringContent(""), "captchaToken");
-
             var response = await _httpClient.PostAsync(url, formData);
             var responseString = await response.Content.ReadAsStringAsync();
             var requestString = await response.RequestMessage.Content.ReadAsStringAsync();

@@ -159,7 +159,6 @@ namespace SelfSign.Controllers
             {
                 return BadRequest();
             }
-
             user.Surname = request.Surname;
             user.Name = request.Name;
             user.Patronymic = request.Patronymic;

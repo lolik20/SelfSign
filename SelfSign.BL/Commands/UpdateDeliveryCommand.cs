@@ -77,19 +77,37 @@ namespace SelfSign.BL.Commands
                     if (isStatement && isPassport)
                     {
                         var isConfirmed = await _itMonitoring.Confirmation(requestEntity.RequestId);
-                        //if (isConfirmed)
-                        //{
-                        //    await _itMonitoring.SimulateConfirmation(requestEntity.RequestId);
-                        //}
+
                     }
 
                     break;
             }
             deliveryEntity.Status = Common.Entities.DeliveryStatus.Completed;
-            await _historyService.AddHistory(requestEntity.Id,"Прикрепление документов курьерами");
+            await _historyService.AddHistory(requestEntity.Id, "Прикрепление документов курьерами");
             _context.SaveChanges();
-            
-            return new UpdateDeliveryResponse { IsSuccessful = true, Message = "Documents updated" };
+            switch (requestEntity.VerificationCenter)
+            {
+                case Common.Entities.VerificationCenter.ItMonitoring:
+
+                    for (int i = 0; i < 30; i++)
+                    {
+                        await Task.Delay(30000);
+                        var status = await _itMonitoring.GetStatus(requestEntity.RequestId);
+                        if (status == 10)
+                        {
+                            await SmsService.SendSms(deliveryEntity.PhoneNumber, "Здравствуйте! Ваш сертификат выпущен. Зайдите в приложение MYDSS");
+                            await _historyService.AddHistory(requestEntity.Id, "Отправка SMS уведомления о выпуске сертификата");
+
+                        }
+                    }
+                    break;
+            }
+            _context.SaveChanges();
+            return new UpdateDeliveryResponse
+            {
+                IsSuccessful = true,
+                Message = "Documents updated"
+            };
         }
     }
 }

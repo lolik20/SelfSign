@@ -14,25 +14,18 @@ namespace SelfSign.BL.Services
         private readonly IConfigurationSection _configuration;
         private readonly ICryptoTransform _encryptor;
         private readonly ICryptoTransform _decryptor;
-        private readonly Aes _aes;
         public EncryptionService(IConfiguration configuration)
 
         {
             _configuration = configuration.GetSection("Encryption");
-            _aes = Aes.Create();
-            _aes.Key = Encoding.ASCII.GetBytes(_configuration["Key"]);
-            _aes.IV = Encoding.ASCII.GetBytes(_configuration["Vector"]);
+            Aes _aes = Aes.Create();
             _aes.Mode = CipherMode.CBC;
             _aes.KeySize = 128;
             _aes.BlockSize = 128;
             _aes.FeedbackSize = 128;
             _aes.Padding = PaddingMode.Zeros;
-            _encryptor = _aes.CreateEncryptor();
-            _decryptor = _aes.CreateDecryptor();
-        }
-        public Aes GetProvider()
-        {
-            return _aes;
+            _encryptor = _aes.CreateEncryptor(Encoding.ASCII.GetBytes(_configuration["Key"]), Encoding.ASCII.GetBytes(_configuration["Vector"]));
+            _decryptor = _aes.CreateDecryptor(Encoding.ASCII.GetBytes(_configuration["Key"]), Encoding.ASCII.GetBytes(_configuration["Vector"]));
         }
         public byte[] Encrypt(byte[] bytes)
         {

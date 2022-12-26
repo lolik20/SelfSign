@@ -24,8 +24,10 @@ namespace SelfSign.BL.Services
             _aes.BlockSize = 128;
             _aes.FeedbackSize = 128;
             _aes.Padding = PaddingMode.Zeros;
-            _encryptor = _aes.CreateEncryptor(Encoding.ASCII.GetBytes(_configuration["Key"]), Encoding.ASCII.GetBytes(_configuration["Vector"]));
-            _decryptor = _aes.CreateDecryptor(Encoding.ASCII.GetBytes(_configuration["Key"]), Encoding.ASCII.GetBytes(_configuration["Vector"]));
+            byte[] key = Encoding.ASCII.GetBytes(_configuration["Key"]);
+            byte[] vector = Encoding.ASCII.GetBytes(_configuration["Vector"]);
+            _encryptor = _aes.CreateEncryptor(key, vector);
+            _decryptor = _aes.CreateDecryptor(key, vector);
         }
         public byte[] Encrypt(byte[] bytes)
         {

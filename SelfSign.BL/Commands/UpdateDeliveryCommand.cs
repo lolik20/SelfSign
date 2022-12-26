@@ -95,7 +95,7 @@ namespace SelfSign.BL.Commands
                         var status = await _itMonitoring.GetStatus(requestEntity.RequestId);
                         if (status == 10)
                         {
-                            await SmsService.SendSms(deliveryEntity.PhoneNumber, "Здравствуйте! Ваш сертификат выпущен. Зайдите в приложение MYDSS");
+                            await SmsService.SendSms(deliveryEntity.PhoneNumber, "Ваш сертификат выпущен. Зайдите в приложение MYDSS");
                             await _historyService.AddHistory(requestEntity.Id, "Отправка SMS уведомления о выпуске сертификата");
 
                         }

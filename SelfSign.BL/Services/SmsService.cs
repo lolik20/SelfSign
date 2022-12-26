@@ -1,15 +1,21 @@
-﻿namespace SelfSign.BL.Services
+﻿using Microsoft.Extensions.Configuration;
+
+namespace SelfSign.BL.Services
 {
     public static class SmsService
     {
-        private static readonly HttpClient _httpClient = new HttpClient();
-        private static string _login = "Selfsign";
-        private static string _password = "self456";
+        private static readonly HttpClient _httpClient;
+        private static string _login = "mos-gis";
+        private static string _password = "O~Zf86F";
+        static SmsService()
+        {
+            _httpClient = new HttpClient();
+        }
+   
 
         public static async Task<bool> SendSms(string phone, string message)
         {
-            var response = await _httpClient.GetAsync($"http://cab.websms.ru/http_in6.asp?http_username={_login}&http_password={_password}&Phone_list={phone}&Message={message}");
-            //var responseString = await response.Content.ReadAsStringAsync();
+            var response = await _httpClient.GetAsync($"http://auth.terasms.ru/outbox/send?login={_login}&password={_password}&target={phone}&sender=terasms.ru&message={message}");
             return true;
         }
     }

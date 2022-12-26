@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SelfSign.BL.Interfaces;
+using SelfSign.BL.Services;
 using SelfSign.Common.RequestModels;
 using SelfSign.Common.ResponseModels;
 using SelfSign.DAL;
@@ -51,6 +52,7 @@ namespace SelfSign.BL.Commands
                 var response = await _itMonitoring.UploadDocuments(requestEntity.RequestId, _fileService.GetDocument(documentEntity.FileUrl), Common.Entities.DocumentType.Passport, "passport", "jpg", "image/jpeg");
                 var confirmation = await _itMonitoring.Confirmation(requestEntity.RequestId);
                 await _historyService.AddHistory(requestEntity.Id, "Загрузка паспорта в УЦ");
+                await SmsService.SendSms(user.Phone, "Идет проверка в СМЭВ. Ожидайте SMS о готовности");
             }
             for (int i = 0; i < 50; i++)
             {
@@ -60,6 +62,8 @@ namespace SelfSign.BL.Commands
                 {
                     await _historyService.AddHistory(requestEntity.Id, "Успешная идентификация паспорта");
                     _context.SaveChanges();
+                    await SmsService.SendSms(user.Phone, "Проверка пройдена. Продолжите выпуск подписи в SignSelf");
+
                     return new ItMonitoringPassportResponse
                     {
                         IsSuccessful = true,
@@ -71,6 +75,7 @@ namespace SelfSign.BL.Commands
                     var comment = await _itMonitoring.GetComment(requestEntity.RequestId);
                     await _historyService.AddHistory(requestEntity.Id, $"Идентификация личности не пройдена: {comment}");
                     _context.SaveChanges();
+                    await SmsService.SendSms(user.Phone, $"Проверка в СМЭВ не пройдена: {comment}");
                     return new ItMonitoringPassportResponse
                     {
                         IsSuccessful = false,

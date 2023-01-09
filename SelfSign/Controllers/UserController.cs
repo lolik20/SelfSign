@@ -99,11 +99,12 @@ namespace SelfSign.Controllers
             {
                 return BadRequest();
             }
-
+            var resultLink = "";
             var user = _context.Users.FirstOrDefault(x => x.Name == request.Name && x.Surname == request.Surname && x.Patronymic == request.Patronymic);
             if (user != null)
             {
                 await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата https://signself.ru/editdata/{user.Id}");
+                resultLink = $"signself.ru/editdata/{user.Id}";
             }
             if (user == null)
             {
@@ -129,6 +130,7 @@ namespace SelfSign.Controllers
                     Citizenship = "-",
                 }).Entity;
                 await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата https://signself.ru/{user.Id}");
+                resultLink = $"signself.ru/{user.Id}";
             }
             _context.Requests.Add(new Request
             {
@@ -138,7 +140,7 @@ namespace SelfSign.Controllers
                 RequestId = "0"
             });
             _context.SaveChanges();
-            return Ok(user.Id);
+            return Ok(resultLink);
 
         }
         [HttpPut("inn")]

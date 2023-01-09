@@ -125,7 +125,7 @@ namespace SelfSign.BL.Services
                 Phone = responseObj?.phone?.created is null ? false : (bool)responseObj.phone.created,
                 Email = responseObj?.email?.created is null ? false : (bool)responseObj.email.created,
                 Inn = responseObj?.inn?.created is null ? false : (bool)responseObj.inn.created,
-                Pdf = responseObj?.phone.pdf
+                Pdf = responseObj?.phone?.pdf
             };
 
         }

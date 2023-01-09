@@ -50,6 +50,19 @@ namespace SelfSign.Controllers
                 Id = user.Id,
                 Email = user.Email,
                 Phone = user.Phone,
+                BirthDate = user.BirthDate.ToString("dd.MM.yyyy"),
+                RegDate = user.RegDate.ToString("dd.MM.yyyy"),
+                IssueDate = user.IssueDate.ToString("dd.MM.yyyy"),
+                Serial = user.Serial,
+                SubDivisionAddress = user.SubDivisionAddress,
+                SubDivisionCode = user.SubDivisionCode,
+                BirthPlace = user.BirthPlace,
+                Gender = user.Gender,
+                Inn = user.Inn,
+                Number = user.Number,
+                RegAddress = user.RegAddress,
+                Snils = user.Snils,
+                Citizenship = user.Citizenship,
             });
         }
         [HttpGet("test")]
@@ -87,18 +100,22 @@ namespace SelfSign.Controllers
                 return BadRequest();
             }
 
-            var user = _context.Users.FirstOrDefault(x => x.Name == request.Name && x.Surname == request.Surname && x.Patronymic == request.Patronymic && x.Phone == request.Phone);
+            var user = _context.Users.FirstOrDefault(x => x.Name == request.Name && x.Surname == request.Surname && x.Patronymic == request.Patronymic);
+            if (user != null)
+            {
+                await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата https://signself.ru/editdata/{user.Id}");
+            }
             if (user == null)
             {
-                var newEntity = _context.Users.Add(new User
+                user = _context.Users.Add(new User
                 {
                     Name = request.Name,
                     Surname = request.Surname,
                     Patronymic = request.Patronymic,
                     Phone = request.Phone,
-                    BirthDate = DateTime.Now.ToUniversalTime(),
-                    RegDate = DateTime.Now.ToUniversalTime(),
-                    IssueDate = DateTime.Now.ToUniversalTime(),
+                    BirthDate = DateTime.UtcNow,
+                    RegDate = DateTime.UtcNow,
+                    IssueDate = DateTime.UtcNow,
                     Serial = "-",
                     SubDivisionAddress = "-",
                     SubDivisionCode = "-",
@@ -110,20 +127,19 @@ namespace SelfSign.Controllers
                     RegAddress = "-",
                     Snils = "-",
                     Citizenship = "-",
-                });
-
-                //await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата http://signself.ru/{newEntity.Entity.Id}");
-                _context.Requests.Add(new Request
-                {
-                    VerificationCenter = request.VerificationCenter,
-                    Created = DateTime.UtcNow,
-                    UserId = newEntity.Entity.Id,
-                    RequestId = "0"
-                });
-                _context.SaveChanges();
-                return Ok(newEntity.Entity.Id);
+                }).Entity;
+                await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата https://signself.ru/{user.Id}");
             }
-            return BadRequest(user.Id);
+            _context.Requests.Add(new Request
+            {
+                VerificationCenter = request.VerificationCenter,
+                Created = DateTime.UtcNow,
+                UserId = user.Id,
+                RequestId = "0"
+            });
+            _context.SaveChanges();
+            return Ok(user.Id);
+
         }
         [HttpPut("inn")]
         public async Task<IActionResult> Inn([FromBody] InnUpdateRequest request)
@@ -353,7 +369,7 @@ namespace SelfSign.Controllers
             user.SubDivisionCode = request.SubDivisionCode;
             user.BirthPlace = request.BirthPlace;
             user.Gender = gender;
-            user.Citizenship = "RU";
+            user.Citizenship = "РФ";
             if (!string.IsNullOrEmpty(request.Citizenship))
             {
                 user.Citizenship = request.Citizenship;

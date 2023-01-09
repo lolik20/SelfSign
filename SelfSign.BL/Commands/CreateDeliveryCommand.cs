@@ -79,7 +79,7 @@ namespace SelfSign.BL.Commands
                 Address = request.Address,
                 VerificationCenter = requestEntity.VerificationCenter,
                 TrackNumber = new Random().Next(0, 1000000),
-                PhoneNumber=request.PhoneNumber
+                PhoneNumber = request.PhoneNumber
             });
             var formData = new MultipartFormDataContent();
             formData.Add(new StringContent(request.Address), "address");
@@ -108,7 +108,7 @@ namespace SelfSign.BL.Commands
             }
             await _historyService.AddHistory(requestEntity.Id, "Создание заявки на доставку");
             _context.SaveChanges();
-            await SmsService.SendSms(request.PhoneNumber, $"Курьер привезет конверт с документами на подпись {request.DeliveryDate} во временном интервале {request.Time} по адресу: {request.Address}. Ваша ссылка для отслеживания статуса доставки https://signself.ru/trackNumber/{newDeliveryEntity.Entity.TrackNumber}");
+            await SmsService.SendSms(request.PhoneNumber, $"Курьер привезет документы {request.DeliveryDate} с {request.Time.Split("-")[0]} до {request.Time.Split("-")[1]} по адресу: {request.Address}. Ссылка для отслеживания доставки https://signself.ru/track/{newDeliveryEntity.Entity.TrackNumber}");
             return new CreateDeliveryResponse()
             {
                 IsSuccess = true,

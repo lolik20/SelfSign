@@ -6,7 +6,7 @@ namespace SelfSign.BL.Services
     {
         private static readonly HttpClient _httpClient;
         private static string _login = "mos-gis";
-        private static string _password = "O~Zf86F";
+        private static string _password = "mT#K1kW";
         static SmsService()
         {
             _httpClient = new HttpClient();

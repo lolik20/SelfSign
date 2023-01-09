@@ -14,6 +14,7 @@ namespace SelfSign.Common.Entities
         public string RequestId { get; set; }
         public User User { get; set; }
         public bool IsAuthenticated { get; set; }
+        public string? Qr { get; set; }
         public List<Document> Documents { get; set; }
         public List<Delivery> Deliveries { get; set; }
         public List<History> History { get; set; }

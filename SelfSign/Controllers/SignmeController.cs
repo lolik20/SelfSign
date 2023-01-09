@@ -19,7 +19,7 @@ namespace SelfSign.Controllers
         }
 
         [HttpGet("request")]
-        public async Task<IActionResult> Request([FromQuery]SignMeRequest request)
+        public async Task<IActionResult> Request([FromQuery] SignMeRequest request)
         {
             var response = await _mediator.Send(request);
             if (!response.IsSuccessful)
@@ -28,7 +28,12 @@ namespace SelfSign.Controllers
             }
             return Ok(response.Message);
         }
-
+        [HttpGet("precheck")]
+        public async Task<IActionResult> PreCheck([FromQuery] CheckSignMeRequest request)
+        {
+            var response = await _mediator.Send(request);
+            return Ok(response);
+        }
     }
 
 }

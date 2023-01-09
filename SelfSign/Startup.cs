@@ -52,10 +52,11 @@ namespace SelfSign
             services.AddMediatR(typeof(PassportUploadCommand).GetTypeInfo().Assembly);
             services.AddMediatR(typeof(CreateSignMeCommand).GetTypeInfo().Assembly);
             services.AddMediatR(typeof(CreateItMonitoringCommand).GetTypeInfo().Assembly);
-            services.AddSingleton<IItMonitoringService, ItMonitoringService>();
+            services.AddTransient<IItMonitoringService, ItMonitoringService>();
             services.AddTransient<IHistoryService, HistoryService>();
             services.AddSingleton<IEncryptionService, EncryptionService>();
             services.AddSingleton<IFileService, FileService>();
+            services.AddTransient<ISignmeService, SignmeService>();
             services.AddHttpClient();
 
 

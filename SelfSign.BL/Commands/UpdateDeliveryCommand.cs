@@ -49,24 +49,33 @@ namespace SelfSign.BL.Commands
             }
             var documents = _context.Documents.Where(x => x.RequestId == requestEntity.Id);
 
-            //var statementPhotoEntity = _context.Documents.Add(new Common.Entities.Document
-            //{
-            //    Created = DateTime.UtcNow,
-            //    DocumentType = Common.Entities.DocumentType.PhotoWithStatement,
-            //    RequestId = requestEntity.Id
-            //});
-            //var statementPhotoUrl = await _fileService.AddFile(request.StatementPhoto, requestEntity.User.Id, statementPhotoEntity.Entity.Id, "jpg");
-            //statementPhotoEntity.Entity.FileUrl = statementPhotoUrl;
+            if (request.StatementPhoto != null)
+            {
+                var statementPhotoEntity = _context.Documents.Add(new Common.Entities.Document
+                {
+                    Created = DateTime.UtcNow,
+                    DocumentType = Common.Entities.DocumentType.PhotoWithStatement,
+                    RequestId = requestEntity.Id
+                });
 
-            var passportScanEntity = documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Passport);
-            var passportScanUrl = await _fileService.AddFile(request.PassportScan, requestEntity.User.Id, passportScanEntity.Id, "jpg");
-            passportScanEntity.FileUrl = passportScanUrl;
-            passportScanEntity.Created = DateTime.UtcNow;
+                var statementPhotoUrl = await _fileService.AddFile(request.StatementPhoto, requestEntity.User.Id, statementPhotoEntity.Entity.Id, "jpg");
+                statementPhotoEntity.Entity.FileUrl = statementPhotoUrl;
+            }
+            if (request.PassportScan != null)
+            {
+                var passportScanEntity = documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Passport);
+                var passportScanUrl = await _fileService.AddFile(request.PassportScan, requestEntity.User.Id, passportScanEntity.Id, "jpg");
+                passportScanEntity.FileUrl = passportScanUrl;
+                passportScanEntity.Created = DateTime.UtcNow;
+            }
 
-            var statementScanEntity = documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Statement);
-            var statementScanUrl = await _fileService.AddFile(request.StatementScan, requestEntity.User.Id, statementScanEntity.Id, "jpg");
-            statementScanEntity.FileUrl = statementScanUrl;
-            statementScanEntity.Created = DateTime.UtcNow;
+            if (request.StatementScan != null)
+            {
+                var statementScanEntity = documents.FirstOrDefault(x => x.DocumentType == Common.Entities.DocumentType.Statement);
+                var statementScanUrl = await _fileService.AddFile(request.StatementScan, requestEntity.User.Id, statementScanEntity.Id, "jpg");
+                statementScanEntity.FileUrl = statementScanUrl;
+                statementScanEntity.Created = DateTime.UtcNow;
+            }
             _context.SaveChanges();
             switch (requestEntity.VerificationCenter)
             {
@@ -96,6 +105,20 @@ namespace SelfSign.BL.Commands
                         if (status == 10)
                         {
                             await SmsService.SendSms(deliveryEntity.PhoneNumber, "Ваш сертификат выпущен. Зайдите в приложение MYDSS");
+                            await _historyService.AddHistory(requestEntity.Id, "Отправка SMS уведомления о выпуске сертификата");
+
+                        }
+                    }
+                    break;
+                case Common.Entities.VerificationCenter.SignMe:
+
+                    for (int i = 0; i < 30; i++)
+                    {
+                        await Task.Delay(30000);
+                        var status = await _itMonitoring.GetStatus(requestEntity.RequestId);
+                        if (status == 10)
+                        {
+                            await SmsService.SendSms(deliveryEntity.PhoneNumber, "Ваш сертификат выпущен. Зайдите в приложение SignMe");
                             await _historyService.AddHistory(requestEntity.Id, "Отправка SMS уведомления о выпуске сертификата");
 
                         }

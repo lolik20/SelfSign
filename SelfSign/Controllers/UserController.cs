@@ -21,14 +21,18 @@ namespace SelfSign.Controllers
         private readonly IConfiguration _configuration;
         private readonly IConfigurationSection _regex;
         private readonly IMediator _mediator;
-        public UserController(ApplicationContext context, IConfiguration configuration, IMediator mediator, IFileService fileService, IEncryptionService encryptionService)
+        private readonly ISignmeService _signmeService;
+        private readonly IFileService _fileService;
+        public UserController(ApplicationContext context, IConfiguration configuration, IMediator mediator, ISignmeService signmeService, IFileService fileService, IEncryptionService encryptionService)
         {
             _context = context;
             _configuration = configuration;
             _regex = _configuration.GetSection("regex");
             _mediator = mediator;
+            _fileService = fileService;
+            _signmeService = signmeService;
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> GetUser([FromQuery] Guid id)
         {
@@ -42,13 +46,25 @@ namespace SelfSign.Controllers
                 Name = user.Name,
                 Surname = user.Surname,
                 Patronymic = user.Patronymic,
-                SignatureType = (int)user.Requests.First().VerificationCenter,
+                Center = user.Requests.First().VerificationCenter.ToString().ToLower(),
                 Id = user.Id,
                 Email = user.Email,
                 Phone = user.Phone,
             });
         }
-
+        [HttpGet("test")]
+        public async Task<IActionResult> test([FromQuery] Guid id)
+        {
+            var user = _context.Users.Include(x => x.Requests).ThenInclude(x => x.Documents).FirstOrDefault(x => x.Id == id);
+            var requestEntity = user.Requests.First();
+            var document = requestEntity.Documents.First(x => x.DocumentType == DocumentType.Statement);
+            var isDocument = await _signmeService.UploadDocument(user.Snils.Replace("-", ""), _fileService.GetBase64(document.FileUrl), document.DocumentType, document.Id.ToString(), "pdf");
+            if (isDocument)
+            {
+                return Ok();
+            }
+            return BadRequest();
+        }
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
@@ -94,11 +110,9 @@ namespace SelfSign.Controllers
                     RegAddress = "-",
                     Snils = "-",
                     Citizenship = "-",
-
-
                 });
 
-                await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата http://signself.ru/{newEntity.Entity.Id}/itmonitoring");
+                //await SmsService.SendSms(request.Phone, $"Ваша ссылка на выпуск сертификата http://signself.ru/{newEntity.Entity.Id}");
                 _context.Requests.Add(new Request
                 {
                     VerificationCenter = request.VerificationCenter,
@@ -320,6 +334,11 @@ namespace SelfSign.Controllers
             {
                 user.Inn = request.Inn;
             }
+            if (request.Phone != null)
+            {
+                user.Phone = request.Phone;
+
+            }
             var gender = (Gender)Enum.ToObject(typeof(Gender), request.Gender);
 
             user.Name = request.Name;
@@ -334,7 +353,6 @@ namespace SelfSign.Controllers
             user.SubDivisionCode = request.SubDivisionCode;
             user.BirthPlace = request.BirthPlace;
             user.Gender = gender;
-
             user.Citizenship = "RU";
             if (!string.IsNullOrEmpty(request.Citizenship))
             {
